@@ -31,9 +31,63 @@
             <div id="con" style="font-family: monospace; font-size: 15pt;">
             </div>
         </div>
+        <div id="frame_alerts" style="font-family: monospace; font-size: 12pt;">
+        </div>
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="./js/jquery.js"></script>
         <script type="text/javascript">
+            function get_reminders(cb) {
+                $.support.cors = true;
+                $.ajax({
+                    crossDomains:   true,
+                    url:            'http://iamresponding.com/v3/AgencyServices.asmx/GetRemindersByMember',
+                    data:           'subsString=536871457&days=30',
+                    method:         'POST',
+                    success: function (data) {
+                        var xml = $(data).find('Event');
+                        var out = [];
+                        for (var n = 0; n < xml.length; ++n) {
+                            var ev = xml[n];
+                            var subject = $(ev).find('Subject').text();
+                            var start = $(ev).find('EventStart').text();
+                            var end = $(ev).find('EventEnd').text();
+                            out.push({
+                                subject:    subject,
+                                start:      new Date(start),
+                                end:        new Date(end),
+                            });                            
+                        }
+                        cb(out);
+                    },
+                });
+            }
+            function get_short_date(d) {
+                s = new String(d).split(' ');
+                return s[4] + ' ' + s[1] + ' ' + s[2];
+			}
+            function get_params(cb) {
+                $.support.cors = true;
+                $.ajax({
+                    crossDomains:       true,
+                    url:                'http://iamresponding.com/v3/AgencyServices.asmx/GetParametersSessionLess',
+                    data:               'org=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&masterAdmin=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&agencyLogined=XsDISNWuJRFmH8Dpp0mh7g%3d%3d&member=pRGbni1xiTyo7tooAXMgcw%3d%3d',
+                    method:             'POST',
+                    success:            function (data) {
+                        var xml = $(data).find('Parameters');
+                        var params = {};
+                        for (var x = 0; x < xml.length; ++x) {
+                            var name = $(xml[x]).find('Name').text();
+                            var value = $(xml[x]).find('Value').text();   
+                            if (params[name] == undefined) {
+                                params[name] = [];
+                            }
+                            params[name].push(value);
+                            //console.log('value', value);
+                        }
+                        cb(params);
+                    },
+                });
+            }
             function get_personnel(cb) {
                 $.support.cors = true;
                 $.ajax({
@@ -332,7 +386,10 @@
 
                 var buf = con_buffer_init(100, 20);
 
-                get_messages(function (msgs) { get_personnel( function (persons) {
+                get_messages(function (msgs) { 
+                get_personnel(function (persons) {
+                get_reminders(function (reminders) {
+                get_params(function (params) { 
                     $(con).empty();
                     $(con).append('It is partially working.');
                     //return;
@@ -484,6 +541,37 @@
                         });
                     }
 
+                    console.log('params', params);
+
+                    msgs_y_offset++;
+                    for (var n = 0; n < reminders.length; n++, msgs_y_offset += 2) {
+                        var remin = reminders[n];
+                        buf.write({
+                            x:          0,
+                            y:          msgs_y_offset,
+                            text:       'Reminder [ ' + get_short_date(remin.start) + ' TO ' + get_short_date(remin.end) + ' ]',
+                            w:          80,
+                            bg:         [33, 33, 33, 255],
+                            fg:         [180, 180, 180],
+                        });       
+                        buf.write({
+                            x:          0,
+                            y:          msgs_y_offset + 1,
+                            text:       '&nbsp;&nbsp;' + remin.subject,
+                            w:          80,
+                            bg:         [33, 33, 33, 255],
+                            fg:         [190, 190, 190],
+                        });
+                    }
+
+                    ++msgs_y_offset;
+
+
+                    for (var n = 0; n < params.OnScreenContent.length; n++) {
+                        var v = params.OnScreenContent[n];
+                        $(frame_alerts).append(v + '<br/>');
+                    }
+
                     var tmp = [msgs[0]];
                     
                     for (var n = 1; n < msgs.length; ++n) {
@@ -556,7 +644,7 @@
                     }
 
                     buf.flushto(con);
-                })});
+                })})})});
             }
         </script>
     </body>
