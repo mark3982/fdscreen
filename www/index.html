@@ -37,6 +37,7 @@
                 alert('fetching messages');
                 $.support.cors = true;
                 $.ajax({
+                        crossDomain:  true,
                         url:     'http://iamresponding.com/v3/DispatchMessages.asmx/ListWithParser',
                         data:    'subscriber=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&member=pRGbni1xiTyo7tooAXMgcw%3d%3d&admin=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&agency=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&_=1434747632060',
                         method:  'POST',
