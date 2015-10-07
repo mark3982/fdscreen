@@ -16,6 +16,7 @@
             }, false);
 
             alert('thinking about loading');
+            con_render(con);
         }
     </script>
     <body onload="on_body_load()">
@@ -35,6 +36,7 @@
         <script type="text/javascript">
             function get_messages(cb) {
                 alert('fetching messages');
+                //console.log = function (msg) { alert(msg); };
                 $.support.cors = true;
                 $.ajax({
                         crossDomain:  true,
@@ -45,8 +47,8 @@
                             //'ASP.NET_SessionId=bzse3z3v25j230swmzjwnhho; __utma=173121979.396418310.1434738994.1434738994.1434738994.1; __utmc=173121979; __utmz=173121979.1434738994.1.1.utmccn=(direct)|utmcsr=(direct)|utmcmd=(none); IarSession=Token=bbf36f71-e520-4356-ae5a-aca96f1ebd9e',
                             //req.setRequestHeader('Cookie', 'hehehe');
                         },
-                        error: function () {
-                            console.log('error fetching messages');
+                        error: function (req, statmsg, errormsg) {
+                            alert('error fetching messages: ' + errormsg);
                         },
                         success: function (data) {
                             var msgs = $(data).find('DispatchMessages');
