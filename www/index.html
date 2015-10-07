@@ -27,6 +27,12 @@
                 color:             #dddddd;
             }
         </style>
+        <div style="padding: 20px;">
+        <span style="font-family: monospace; font-size: 6pt; padding: 5px; ">
+            Created by McGuire (kmcg3413@gmail.com)
+        </span>
+        <span id="frame_status" style="font-family: monospace; font-size: 10pt; padding: 20px;">
+        </span></div>
         <div class="app">
             <div id="con" style="font-family: monospace; font-size: 15pt;">
             </div>
@@ -382,14 +388,59 @@
                 };
             }
 
+            frame_status.xrender = function () {
+                var delta = (new Date().getTime() - this.last_update) / 1000;
+                $(this).empty();
+                $(this).append(
+                    'Updates: ' + this.update_count + ' ' +
+                    'Fetches: ' + this.fetch_count + ' ' +
+                    'Status: ' + this.msg + ' ' +
+                    'Last updated ' + delta + ' seconds ago...'
+                );
+            };
+
+            frame_status.msg = '';
+            frame_status.update_count = 0;
+            frame_status.fetch_count = 0;
+            frame_status.last_update = new Date();
+
+            //console.log('@@@', frame_status.xrender);
+
+            frame_status.set_message = function (msg) {
+                this.msg = msg;
+                this.xrender();
+            };
+
+            frame_status.inc_update_count = function () {
+                this.update_count++;
+                this.last_update = (new Date()).getTime();
+                this.xrender();
+            };
+
+            frame_status.inc_fetch_count = function() {
+                this.fetch_count++;
+                this.xrender();
+            };
+
+            // This could be very helpful for production debugging.
+            console.log = function (msg) {
+                frame_status.set_message(msg);
+            }
+
             function con_render(con) {
 
                 var buf = con_buffer_init(100, 20);
 
+                frame_status.inc_fetch_count();
+                frame_status.set_message('Fetching data from IAR server..');
+
                 get_messages(function (msgs) { 
                 get_personnel(function (persons) {
                 get_reminders(function (reminders) {
-                get_params(function (params) { 
+                get_params(function (params) {
+                    frame_status.inc_update_count();
+                    frame_status.set_message('Rendering data from IAR server..');
+
                     $(con).empty();
                     $(con).append('It is partially working.');
                     //return;
@@ -600,6 +651,7 @@
 
                     msgs = tmp;
 
+                    frame_status.set_message('Writing incident messages..');
                     for (var n = 0; n < msgs.length; ++n) {
                         //console.log('@', msgs[x]);
                         //for (var k in msgs[x]) {
@@ -643,7 +695,9 @@
                         });
                     }
 
+                    frame_status.set_message('Writing data to the screen...');
                     buf.flushto(con);
+                    frame_status.set_message('DONE OK');
                 })})})});
             }
         </script>
