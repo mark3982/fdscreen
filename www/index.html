@@ -12,11 +12,11 @@
     <script type="text/javascript">
         function on_body_load() {
             document.addEventListener('deviceready', function () {
-                alert('device ready');
-                con_render(con);
+                //alert('device ready');
+                setInterval(function () { con_render(con) }, 3000);
             }, false);
 
-            alert('thinking about loading');
+            //alert('thinking about loading');
             con_render(con);
         }
     </script>
@@ -27,16 +27,68 @@
                 color:             #dddddd;
             }
         </style>
-        <h1>Debug Mode</h1>
         <div class="app">
-            <div id="con" style="font-family: monospace;">
+            <div id="con" style="font-family: monospace; font-size: 12pt;">
             </div>
         </div>
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="./js/jquery.js"></script>
         <script type="text/javascript">
+            function get_personnel(cb) {
+                $.support.cors = true;
+                $.ajax({
+                        crossDomains: true,
+                        url:          'http://iamresponding.com/v3/AgencyServices.asmx/GetOnScheduleWithSort',
+                        data:         'org=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&sort=memberlname asc,memberlname asc&member=pRGbni1xiTyo7tooAXMgcw%3d%3d&flag=0',
+                        method:       'POST',
+                        success: function (data) {
+                            var xmlps = $(data).find('OnSchedule');
+                            per = {};
+                            for (var x = 0; x < xmlps.length; ++x) {
+                                var xmlp = xmlps[x];
+                                var membername = $(xmlp).find('membername').text();
+                                var category = $(xmlp).find('membercat').text();
+                                var group = $(xmlp).find('instationorhome').text();
+                                var arealocation = $(xmlp).find('memberstation').text();
+                                var onduty_until = $(xmlp).find('untilat').text();   
+                                per[membername] = {
+                                    name:          membername,
+                                    category:      category,
+                                    group:         group,
+                                    arealocation:  arealocation,
+                                    onduty_until:  onduty_until,
+                                };
+                            }
+
+                            $.ajax({
+                                crossDomains:    true,
+                                url:             'http://iamresponding.com/v3/AgencyServices.asmx/GetNowRespondingWithSort',
+                                data:            'org=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&member=pRGbni1xiTyo7tooAXMgcw%3d%3d&sort=callingtime desc,callingtime desc&flag=&userType=',
+                                method:          'POST',
+                                success:         function (data) {
+                                    var xmlp = $(data).find('NowResponding');
+                                    for (var x = 0; x < xmlp.length; ++x) {
+                                        var fname = $(xmlp[x]).find('memberfname').text();
+                                        var station =  $(xmlp[x]).find('memberstation').text();
+                                        var cat = $(xmlp[x]).find('membercat').text();
+                                        var callingtime = $(xmlp[x]).find('callingtime').text();
+                                        var eta = $(xmlp[x]).find('eta').text();
+                                        if (fname.trim().length < 1) {
+                                            continue;
+                                        }
+                                        per[fname].arealocation = station;
+                                        per[fname].category = cat;
+                                        per[fname].calltime = callingtime;
+                                        per[fname].calleta = eta;
+                                    }                                    
+                                    cb(per);
+                                },
+                            });
+                        },
+                });
+            }
             function get_messages(cb) {
-                alert('fetching messages');
+                //alert('fetching messages');
                 //console.log = function (msg) { alert(msg); };
                 $.support.cors = true;
                 $.ajax({
@@ -49,12 +101,12 @@
                             //req.setRequestHeader('Cookie', 'hehehe');
                         },
                         error: function (req, statmsg, errormsg) {
-                            alert('error fetching messages: ' + errormsg + ':' + req.url);
+                            //alert('error fetching messages: ' + errormsg + ':' + req.url);
                         },
                         success: function (data) {
                             var msgs = $(data).find('DispatchMessages');
 
-                            alert('got messages');
+                            //alert('got messages');
 
                             var out = [];
 
@@ -118,8 +170,6 @@
                                             continue;
                                         }
                                     }
-
-                                    // jj!33!
 
                                     if (line.indexOf('Call Received Time:') == 0) {
                                         // Call Received Time: 9/28/2015 12:50:28 PM Dispatch: 9/28/2015 1:08:27 PM Enroute: 13:08:38 OnScene: 13:17:24 Depart: 13:41:39 Comp: 13:49:04
@@ -185,7 +235,7 @@
                             cb(out);
                         }
                 });
-                alert('asycn handoff complete');
+                //alert('asycn handoff complete');
             }
 
             function con_buffer_init(w, h) {
@@ -193,7 +243,7 @@
                 var fg = [];
                 var bg = [];
                 for (var n = 0; n < w * h; ++n) {
-                    buf.push('.');
+                    buf.push('&nbsp;');
                     fg.push(230);
                     fg.push(230);
                     fg.push(230);
@@ -282,7 +332,7 @@
 
                 var buf = con_buffer_init(100, 20);
 
-                get_messages(function (msgs) {
+                get_messages(function (msgs) { get_personnel( function (persons) {
                     $(con).empty();
                     $(con).append('It is partially working.');
                     //return;
@@ -297,7 +347,143 @@
                     var col_colors_rst = function () {
                         col_colors_ndx = 0;
                     };
-                    
+                       
+                    var msgs_y_offset;
+
+                    function break_name_into_parts(name) {
+                        var a = name.indexOf('(');
+                        var b = name.indexOf(')');
+                        if (a < 0 || b < 0 || b < a || b == a) {
+                            return [null, name];
+                        }
+                        var num = name.substr(a + 1, b - 1);
+                        if (isNaN(num)) {
+                            console.log('@', num);
+                            return [null, name];
+                        }    
+
+                        return [parseInt(num), name.substr(0, a) + name.substr(b + 1)];  
+                    }
+
+                    tmp = [];
+                    for (var k in persons) {
+                        var r = break_name_into_parts(persons[k].name);
+                        persons[k].fdid = r[0];
+                        persons[k].name = r[1];
+                        tmp.push(persons[k]);
+                    }
+                    persons = tmp;
+
+
+                    persons.sort(function (ap, bp) {
+                        // 1 if a is greater
+                        // 0 if they are the same
+                        // -1 if b is lesser 
+                        if (ap.fdid < bp.fdid) { return -1; }
+                        if (ap.fdid > bp.fdid) { return 1; }
+                        return 0;
+                    });
+
+                    for (var n = 0; n < persons.length; ++n) {
+                        var person = persons[n];
+                        console.log('person', person);
+
+                        msgs_y_offset = n + 1;
+
+                        var inactive = false;
+                        var isems;
+
+                        var fgcolor = [0xdd, 0xdd, 0xdd];
+                        var bgcolor = [99, 99, 99, 255];
+
+                        if (person.arealocation.toLowerCase().indexOf('o.o.t') > -1) {
+                            state = 'INACTIVE';
+                            state_fg = [0xbb, 0xbb, 0xbb];
+                            state_bg = [0, 0, 0, 255];
+                            inactive = true;
+                        }
+
+                        if (person.group.toLowerCase().indexOf('unavail') > -1) {
+                            fgcolor = [0x44, 0x44, 0x44];
+                            inactive = true;
+                        }
+                
+                        if (person.group.toLowerCase().indexOf('ems') > -1) {
+                            bgcolor = [0x40, 0x40, 0xa0, 255];
+                            isems = true;
+                        } else {
+                            bgcolor = [0xa0, 0x40, 0x40, 255];
+                            isems = false;
+                        }
+                        
+                        if (person.calltime && person.calltime.length) {
+                            state = 'RESPONDING';
+                            state_fg = [0, 0, 0];
+                            state_bg = [0, 0x99, 0, 255];
+                        } else {
+                            if (!inactive) {
+                                state = 'ON DUTY';
+                                state_fg = [190, 190, 190];
+                                state_bg = [40, 40, 40, 255];
+                            }
+                        }
+
+                        var shade = 0.9;
+
+                        function doshade(rgba, co) {
+                            return [
+                                Math.floor(rgba[0] * co),
+                                Math.floor(rgba[1] * co),
+                                Math.floor(rgba[2] * co),
+                                Math.floor(rgba[3]),
+                            ];
+                        }
+
+                        buf.write({
+                            x:      0,
+                            y:      n,
+                            text:   state,
+                            w:      15,
+                            bg:     state_bg,
+                            fg:     state_fg,
+                        });
+
+                        buf.write({
+                            text:   new String(person.fdid || ' '),
+                            w:      5,
+                            bg:     bgcolor,
+                            fg:     fgcolor,
+                        });                       
+ 
+                        buf.write({
+                            text:   person.name,
+                            w:      25,
+                            bg:     doshade(bgcolor, shade),
+                            fg:     fgcolor,
+                        });   
+
+                        buf.write({
+                            text:   person.category,
+                            w:      20,
+                            bg:     bgcolor,
+                            fg:     fgcolor,
+                        });
+
+                        buf.write({
+                            text:   person.arealocation,
+                            w:      10,
+                            bg:     doshade(bgcolor, shade),
+                            fg:     fgcolor,
+                        });
+    
+                        buf.write({
+                            text:   person.onduty_until,
+                            w:      15,
+                            bg:     bgcolor,
+                            fg:     fgcolor,
+                        });
+                    }
+
                     var tmp = [msgs[0]];
                     
                     for (var n = 1; n < msgs.length; ++n) {
@@ -338,7 +524,7 @@
 
                         buf.write({
                             x:       0,
-                            y:       n,
+                            y:       n + msgs_y_offset,
                             bg:      col_colors_get(),
                             text:    new String(msgs[n].get_short_date()),
                             w:       15,
@@ -370,7 +556,7 @@
                     }
 
                     buf.flushto(con);
-                });
+                })});
             }
         </script>
     </body>
