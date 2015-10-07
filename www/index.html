@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <title>EFD Screen</title>
+    </head>
+    <body>
+        <style>
+            body {
+                background-color:  #222222;
+                color:             #dddddd;
+            }
+        </style>
+        <div class="app">
+            <div id="con" style="font-family: monospace;">
+            </div>
+        </div>
+<iframe width="150" height="150" frameborder="0" style="border:0"
+src="https://www.google.com/maps/embed/v1/view?zoom=16&center=32.6338,-86.0339&key=AIzaSyBQs-0jPQGY4lv8JP0twTA1qfMmQPaHmlU" allowfullscreen></iframe>
+        <script type="text/javascript" src="jquery-2.1.4.js"></script>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript">
+            function get_messages(cb) {
+                console.log('fetching messages');
+                $.ajax({
+                        url: 'http://iamresponding.com/v3/DispatchMessages.asmx/ListWithParser',
+                        data: 'subscriber=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&member=pRGbni1xiTyo7tooAXMgcw%3d%3d&admin=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&agency=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&_=1434747632060',
+                        method:  'POST',
+                        beforeSend:   function (req) {
+                            //'ASP.NET_SessionId=bzse3z3v25j230swmzjwnhho; __utma=173121979.396418310.1434738994.1434738994.1434738994.1; __utmc=173121979; __utmz=173121979.1434738994.1.1.utmccn=(direct)|utmcsr=(direct)|utmcmd=(none); IarSession=Token=bbf36f71-e520-4356-ae5a-aca96f1ebd9e',
+                            req.setRequestHeader('Cookie', 'hehehe');
+                        },
+                        error: function () {
+                            console.log('error fetching messages');
+                        },
+                        success: function (data) {
+                            var msgs = $(data).find('DispatchMessages');
+
+                            console.log('got messages');
+
+                            var out = [];
+
+                            for (var ndx = 0; ndx < msgs.length; ++ndx) {
+                                var arrivedon_text = $(msgs[ndx]).find('ArrivedOnString').text();
+                                var text = $(msgs[ndx]).find('MessageBody').text();
+                                //console.log('text', text);
+                                var lines = text.split('<br />').join('').split('\n');
+
+                                var header = null;
+
+                                msg = {};
+
+                                var address0 = null;
+                                var address1 = null;
+                                var units = null;
+                                var subj = null;
+                                var desc = [];
+                                var desc_yank = null;
+
+                                for (var y = 0; y < lines.length; ++y) {
+                                    var line = lines[y];
+
+                                    line = line.trim();
+
+                                    var tmp = line.toUpperCase();
+
+                                    /* first best guess at an address */
+                                    if (!address0 && (tmp.indexOf('ECLECTIC') > -1 || tmp.indexOf('ELMORE') > -1)) {
+                                        address0 = tmp;
+                                        continue;
+                                    }
+
+                                    /* second best guess at an address */
+                                    var do_unit_check = true;
+                                    if (!address1 && (tmp.indexOf('RD') > -1 || tmp.indexOf('AVE') > -1 || tmp.indexOf('LN') > -1 || tmp.indexOf('HWY') > -1)) {
+                                        address1 = tmp;
+                                        do_unit_check = false;
+                                        //console.log('backup-address', tmp);
+                                        desc_yank = desc.length;
+                                    }
+
+                                    if (do_unit_check && !units) {
+                                        var parts = line.toUpperCase().split(' ');
+
+                                        var pass = true;
+
+                                        for (var x = 0; x < parts.length; ++x) {
+                                            var part = parts[x];
+
+                                            if (part.length != 3 && part.length != 4) {
+                                                //console.log('part is length', part.length);
+                                                pass = false;
+                                                break;
+                                            }
+                                        }
+
+                                        if (pass) {
+                                            desc_yank = null;
+                                            units = line.toUpperCase();
+                                            continue;
+                                        }
+                                    }
+
+                                    // jj!33!
+
+                                    if (line.indexOf('Call Received Time:') == 0) {
+                                        // Call Received Time: 9/28/2015 12:50:28 PM Dispatch: 9/28/2015 1:08:27 PM Enroute: 13:08:38 OnScene: 13:17:24 Depart: 13:41:39 Comp: 13:49:04
+                                        for (var x = 0; x < line.length; ++x) {
+
+                                        }
+                                        desc_yank = null;
+                                        continue;
+                                    }
+
+                                    if (line.indexOf(':') > -1) {
+                                        line = line.substr(line.indexOf(':') + 1);
+                                    }
+
+                                    if (line.trim().length < 1) {
+                                        desc_yank = null;
+                                        continue;
+                                    }
+
+                                    //console.log('looking', line);
+
+                                    line = line.trim();
+
+                                    desc.push(line);
+                                }
+
+                                var address;
+
+                                if (address0) {
+                                    address = address0;
+                                } else {
+                                    if (desc_yank) {
+                                        desc.remove(desc_yank);
+                                    }
+                                    address = address1;
+                                }
+
+                                subject = desc.shift();
+
+                                var arrivedon = new Date(arrivedon_text);
+
+                                msg = {
+                                    arrived_on:     arrivedon,
+                                    address:        address,
+                                    units:          units,
+                                    subject:        subject,
+                                    desc:           desc,
+                                };
+
+                                msg.get_short_date = function () {
+                                    var s = this.arrived_on;
+                                    s = new String(s).split(' ');
+                                    return s[4] + ' ' + s[1] + ' ' + s[2];
+								};
+
+                                //console.log(msg);
+
+                                out.push(msg);
+                            }
+
+                            console.log('done');
+
+                            cb(out);
+                        }
+                });
+            }
+
+            function con_buffer_init(w, h) {
+                var buf = [];
+                var fg = [];
+                var bg = [];
+                for (var n = 0; n < w * h; ++n) {
+                    buf.push('.');
+                    fg.push(230);
+                    fg.push(230);
+                    fg.push(230);
+                    bg.push(0);
+                    bg.push(0);
+                    bg.push(0);
+                    bg.push(0);
+                }
+                return {
+                    fg:     fg,
+                    bg:     bg,
+                    buf:    buf,
+                    w:      w,
+                    h:      h,
+                    lx:     -1,
+                    ly:     0,
+                    write:  function(params) {
+                        if (params.x == undefined) {
+                            params.x = this.lx + 1;
+                        }
+                        if (params.y == undefined) {
+                            params.y = this.ly;
+                        }
+
+                        params.w = params.w || params.text.length;
+
+                        params.fg = params.fg || [230, 230, 230];
+                        params.bg = params.bg || [0, 0, 0, 0];
+
+                        //console.log('??', params.x, params.y);
+
+                        for (var n = 0; n < params.w; ++n) {
+                            var x = params.x + n;
+                            var y = Math.floor(x / this.w);
+                            x = x - (y * this.w);
+                            y += params.y;
+                            this.lx = x;
+                            this.ly = y;
+                            if (n < params.text.length) {
+                                this.buf[x + y * this.w] = params.text[n];
+                            } else {
+                                this.buf[x + y * this.w] = '&nbsp;';
+                            }
+                            this.fg[(x + y * this.w) * 3] = params.fg;
+                            this.bg[(x + y * this.w) * 4] = params.bg;
+                        }
+                    },
+                    flushto:  function(con) {
+                        $(con).empty();
+                        console.log(this); 
+
+                        for (var y = 0; y < this.h; ++y) {
+                            /* find entire segment of same color */
+
+                            var s = 0;
+                            while (s < this.w) {
+                                var cfg = this.fg[(y * this.w + s) * 3];
+                                var cbg = this.bg[(y * this.w + s) * 4];
+                                var begin = s;
+                                for (; s < this.w; ++s) {
+                                    var _fg = this.fg[(y * this.w + s) * 3];
+                                    var _bg = this.bg[(y * this.w + s) * 4];
+                                    if (_fg[0] != cfg[0] || _fg[1] != cfg[1] || _fg[2] != cfg[2] ||
+                                        _bg[0] != cbg[0] || _bg[1] != cbg[1] || _bg[2] != cbg[2] ||
+                                        _bg[3] != cbg[3]) {
+                                        break;
+                                    }
+                                }
+
+                                var line = this.buf.slice(y * this.w + begin, y * this.w + s).join('');
+                            
+                                var el = document.createElement('span');
+                                el.style.padding = '0px 5px 0px 5px';
+                                el.style.color = 'rgb(' + cfg[0] + ',' + cfg[1] + ',' + cfg[2] + ')';
+                                el.style['background-color'] = 'rgba(' + cbg[0] + ',' + cbg[1] + ',' + cbg[2] + ',' + cbg[3] + ')';
+                                $(el).append(line);
+                                $(con).append(el); 
+                            }                               
+                            $(con).append('<br/>');
+                        }
+                    }
+                };
+            }
+
+            function con_render(con) {
+
+                var buf = con_buffer_init(100, 20);
+
+                get_messages(function (msgs) {
+                    var col_colors = [[99, 99, 99, 255], [77, 77, 77, 255]];
+                    var col_colors_ndx = 0;
+                    var col_colors_get = function () {
+                        var tmp = col_colors_ndx;
+                        col_colors_ndx = (col_colors_ndx + 1) % col_colors.length;
+                        return col_colors[tmp];
+                    };
+                    var col_colors_rst = function () {
+                        col_colors_ndx = 0;
+                    };
+                    
+                    var tmp = [msgs[0]];
+                    
+                    for (var n = 1; n < msgs.length; ++n) {
+                        var lst = tmp[tmp.length - 1];
+                        var msg = msgs[n];
+
+                        if (lst.subject == msg.subject && lst.address == msg.address) {
+                            var a = lst.units.split(' ');
+                            var b = msg.units.split(' ');
+                            var units = {};
+                            for (var x = 0; x < a.length; ++x) {
+                                units[a[x]] = true;
+                            }
+                            for (var x = 0; x < b.length; ++x) {
+                                units[b[x]] = true;
+                            }
+                            var _units = [];
+                            for (var k in units) {
+                                _units.push(k);
+                            }
+                            lst.units = _units.join(' ');
+                            continue;
+                        }
+                        tmp.push(msg);
+                    }
+
+                    msgs = tmp;
+
+                    for (var n = 0; n < msgs.length; ++n) {
+                        //console.log('@', msgs[x]);
+                        //for (var k in msgs[x]) {
+                        //    $(con).append(k + ':' + msgs[x].subject);
+                        //}
+
+                        var msg = msgs[n];
+
+                        col_colors_rst();                        
+
+                        buf.write({
+                            x:       0,
+                            y:       n,
+                            bg:      col_colors_get(),
+                            text:    new String(msgs[n].get_short_date()),
+                            w:       15,
+                        });
+
+                        buf.write({
+                            bg:     col_colors_get(),
+                            text:   msg.subject,
+                            w:      10,
+                        });
+
+                        buf.write({
+                            bg:     col_colors_get(),
+                            text:   msg.address,
+                            w:      30,
+                        });
+
+                        buf.write({
+                            bg:     col_colors_get(),
+                            text:   msg.desc.join(' '),
+                            w:      25,
+                        });
+
+                        buf.write({
+                            bg:     col_colors_get(),
+                            text:   msg.units,
+                            w:      20,
+                        });
+                    }
+
+                    buf.flushto(con);
+                });
+            }
+
+            document.addEventListener('deviceready', function () {
+                con_render(con);
+            }, false);
+
+            con_render(con);
+
+            app.initialize();
+        </script>
+    </body>
+</html>
