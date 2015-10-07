@@ -49,7 +49,7 @@
                             //req.setRequestHeader('Cookie', 'hehehe');
                         },
                         error: function (req, statmsg, errormsg) {
-                            alert('error fetching messages: ' + errormsg);
+                            alert('error fetching messages: ' + errormsg + ':' + req.url);
                         },
                         success: function (data) {
                             var msgs = $(data).find('DispatchMessages');
