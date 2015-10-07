@@ -32,7 +32,9 @@
             Created by McGuire (kmcg3413@gmail.com)
         </span>
         <span id="frame_status" style="font-family: monospace; font-size: 10pt; padding: 20px;">
-        </span></div>
+        </span>
+        </div>
+        <div id="frame_warning" style="display: none; font-size: 24pt; padding: 0px 0px 0px 20px; font-family: monospace; border: 10px dashed #ff0000; background-color: #ee3333; margin: 15px; color: #000000;"></div>
         <div class="app">
             <div id="con" style="font-family: monospace; font-size: 15pt;">
             </div>
@@ -389,7 +391,7 @@
             }
 
             frame_status.xrender = function () {
-                var delta = (new Date().getTime() - this.last_update) / 1000;
+                var delta = this.seconds_since_update();
                 $(this).empty();
                 $(this).append(
                     'Updates: ' + this.update_count + ' ' +
@@ -405,6 +407,21 @@
             frame_status.last_update = new Date();
 
             //console.log('@@@', frame_status.xrender);
+
+            setInterval(function () {
+                var delta = frame_status.seconds_since_update();
+                if (delta > 30) { 
+                    $(frame_warning).empty();
+                    $(frame_warning).show();
+                    $(frame_warning).append('WARNING: CHECK INTERNET... ' + Math.floor(delta) + ' SECONDS OFFLINE');
+                } else {
+                    $(frame_warning).hide();
+                }
+            }, 3000);
+
+            frame_status.seconds_since_update = function () {
+                return (new Date().getTime() - this.last_update) / 1000;
+            };
 
             frame_status.set_message = function (msg) {
                 this.msg = msg;
