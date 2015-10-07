@@ -50,7 +50,7 @@
     <gap:splash gap:platform="winphone" src="www/res/screen/windows-phone/screen-portrait.jpg" />
     <feature name="http://api.phonegap.com/1.0/network"/>
     <plugin name="cordova-plugin-whitelist" version="1" />
-    <access origin="*" />
+    <access origin="http://*" />
     <allow-navigation href="*" />
     <allow-intent href="*" />
     <platform name="android">
