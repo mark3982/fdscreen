@@ -1,3 +1,3 @@
 <cordova>
-	<access origin=".*"/>
+	<access origin="*"/>
 </cordova>
