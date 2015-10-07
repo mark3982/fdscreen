@@ -268,6 +268,9 @@
                 var buf = con_buffer_init(100, 20);
 
                 get_messages(function (msgs) {
+                    $(con).empty();
+                    $(con).append('It is partially working.');
+
                     var col_colors = [[99, 99, 99, 255], [77, 77, 77, 255]];
                     var col_colors_ndx = 0;
                     var col_colors_get = function () {
@@ -275,6 +278,7 @@
                         col_colors_ndx = (col_colors_ndx + 1) % col_colors.length;
                         return col_colors[tmp];
                     };
+                    
                     var col_colors_rst = function () {
                         col_colors_ndx = 0;
                     };
