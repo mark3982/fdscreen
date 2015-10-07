@@ -51,12 +51,8 @@
     <feature name="http://api.phonegap.com/1.0/network"/>
     <plugin name="cordova-plugin-whitelist" version="1" />
     <access origin="*" />
-    <allow-intent href="http://*/*" />
-    <allow-intent href="https://*/*" />
-    <allow-intent href="tel:*" />
-    <allow-intent href="sms:*" />
-    <allow-intent href="mailto:*" />
-    <allow-intent href="geo:*" />
+    <allow-navigation href="*" />
+    <allow-intent href="*" />
     <platform name="android">
         <allow-intent href="market:*" />
     </platform>
