@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'">
+        <meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'">
         <meta name="format-detection" content="telephone=no" />
         <meta name="msapplication-tap-highlight" content="no" />
         <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
@@ -36,6 +36,7 @@
         </div>
         <div id="frame_warning" style="display: none; font-size: 24pt; padding: 0px 0px 0px 20px; font-family: monospace; border: 10px dashed #ff0000; background-color: #ee3333; margin: 15px; color: #000000;"></div>
         <div class="app">
+            <div id="gmap" style="position: absolute;">BBBBBBBB<br/>XXXXXXXXXX<br/>YYYYYY</div>
             <div id="con" style="font-family: monospace; font-size: 15pt;">
             </div>
         </div>
@@ -43,6 +44,18 @@
         </div>
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="./js/jquery.js"></script>
+        <script type="text/javascript">
+            function initMap() {
+                var map = new google.maps.Map(gmap, {
+                    center: { lat: -32.397, lng: 150.644 },
+                    scrollWheel: false,
+                    zoom: 8,
+                    mapTypeId: google.maps.MapTypeId.SATELLITE,
+                });
+            }
+        </script>
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQs-0jPQGY4lv8JP0twTA1qfMmQPaHmlU&callback=initMap">
+        </script>
         <script type="text/javascript">
             function get_reminders(cb) {
                 $.support.cors = true;

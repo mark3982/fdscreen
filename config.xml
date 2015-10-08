@@ -50,6 +50,7 @@
     <gap:splash gap:platform="winphone" src="www/res/screen/windows-phone/screen-portrait.jpg" />
     <feature name="http://api.phonegap.com/1.0/network"/>
     <plugin name="cordova-plugin-whitelist" version="1" />
+    <gap:plugin name="nl.x-services.plugins.insomnia" />
     <gap:plugin name="com.indigoway.cordova.whitelist.whitelistplugin" />
     <access origin="http://*" />
     <allow-navigation href="*" />
