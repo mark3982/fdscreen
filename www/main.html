@@ -13,7 +13,8 @@
         function on_body_load() {
             document.addEventListener('deviceready', function () {
                 //alert('device ready');
-                setInterval(function () { con_render(con) }, 3000);
+                //setInterval(function () { con_render(con) }, 3000);
+                app_init();   
             }, false);
 
 	    if (window && window.plugins && windows.plugins.insomnia) {
@@ -21,8 +22,28 @@
 	    } else {
                 alert('An error occured while trying to prevent the screen from sleeping.');
             }
+
+	    function app_init() {
+		    window.addEventListener('message', function (e) {
+		       switch (e.data) {
+                	   case 'start':
+	                       console.log('start');
+	                       document.__main_interval = setInterval(function () {
+				   console.log('tick');
+	                           window.postMessage('tick', '*');
+	                       }, 3000);
+		       }
+		    }, false);
+	
+		window.addEventListener('message', function (e) {
+			if (e.data == 'tick')
+	                con_render(con);
+		});
+	
+	        window.postMessage('start', '*');
+	    }
             //alert('thinking about loading');
-            con_render(con);
+            //con_render(con);
         }
     </script>
     <body onload="on_body_load()">
