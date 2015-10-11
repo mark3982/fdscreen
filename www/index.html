@@ -375,6 +375,7 @@
           clear: function() {
             for (var i = 0; i < this.w * this.h; ++i) {
               this.buf[i].innerHTML = '&nbsp;';
+              this.buf[i].style['background-color'] = 'rgba(0, 0, 0, 0)';
             }
           },
           write: function(params) {
