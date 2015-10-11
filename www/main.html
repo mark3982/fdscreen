@@ -31,7 +31,7 @@
           document.__main_interval = setInterval(function () {
             console.log('tick');
             window.postMessage('tick', '*');
-          }, 250);
+          }, 5000);
           break;
           case 'tick':
             con_render(con);
