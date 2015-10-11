@@ -1,770 +1,755 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'">
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="msapplication-tap-highlight" content="no" />
-        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
-        <title>EFD Screen</title>
-    </head>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+    <title>EFD Screen</title>
+  </head>
+  <script type="text/javascript">
+    function on_body_load() {
+      document.addEventListener('deviceready', function () {
+        //alert('device ready');
+        //setInterval(function () { con_render(con) }, 3000);
+        app_init();  
+      }, false);
+
+   if (window && window.plugins && windows.plugins.insomnia) {
+     window.plugins.insomnia.keepAwake();
+   } else {
+        alert('An error occured while trying to prevent the screen from sleeping.');
+      }
+
+   function app_init() {
+    window.addEventListener('message', function (e) {
+      switch (e.data) {
+        case 'start':
+          console.log('start');
+          document.__main_interval = setInterval(function () {
+            console.log('tick');
+            window.postMessage('tick', '*');
+          }, 250);
+          break;
+          case 'tick':
+            con_render(con);
+            break;
+      }
+    }, false);
+    window.postMessage('start', '*');
+   }
+
+      app_init();
+
+      //alert('thinking about loading');
+      //con_render(con);
+    }
+  </script>
+  <body onload="on_body_load()">
+    <style>
+      body {
+        background-color:  #222222;
+        color:      #dddddd;
+      }
+    </style>
+    <div style="padding: 20px;">
+    <span style="font-family: monospace; font-size: 6pt; padding: 5px; ">
+      Created by McGuire (kmcg3413@gmail.com)
+    </span>
+    <span id="frame_status" style="font-family: monospace; font-size: 10pt; padding: 20px;">
+    </span>
+    </div>
+    <div id="frame_warning" style="display: none; font-size: 24pt; padding: 0px 0px 0px 20px; font-family: monospace; border: 10px dashed #ff0000; background-color: #ee3333; margin: 15px; color: #000000;"></div>
+    <div class="app">
+      <div id="gmap" style="position: absolute;"></div>
+      <div id="con" style="font-family: monospace; font-size: 15pt;">
+      </div>
+    </div>
+    <div id="frame_alerts" style="font-family: monospace; font-size: 12pt;">
+    </div>
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="./js/jquery.js"></script>
+ <script type="text/javascript" src="js/Insomnia.js"></script>
     <script type="text/javascript">
-        function on_body_load() {
-            document.addEventListener('deviceready', function () {
-                //alert('device ready');
-                //setInterval(function () { con_render(con) }, 3000);
-                app_init();   
-            }, false);
-
-	    if (window && window.plugins && windows.plugins.insomnia) {
-	        window.plugins.insomnia.keepAwake();
-	    } else {
-                alert('An error occured while trying to prevent the screen from sleeping.');
-            }
-
-	    function app_init() {
-		window.addEventListener('message', function (e) {
-		       switch (e.data) {
-                	   case 'start':
-	                       console.log('start');
-	                       document.__main_interval = setInterval(function () {
-				   console.log('tick');
-	                           window.postMessage('tick', '*');
-	                       }, 3000);
-                               break;
-                           case 'tick':
-                               con_render(con);
-                               break;
-		       }
-		    }, false);
-	
-	        window.postMessage('start', '*');
-	    }
-
-            //app_init();
-
-            //alert('thinking about loading');
-            //con_render(con);
-        }
+      function initMap() {
+        var map = new google.maps.Map(gmap, {
+          center: { lat: -32.397, lng: 150.644 },
+          scrollWheel: false,
+          zoom: 8,
+          mapTypeId: google.maps.MapTypeId.SATELLITE,
+        });
+      }
     </script>
-    <body onload="on_body_load()">
-        <style>
-            body {
-                background-color:  #222222;
-                color:             #dddddd;
+    <xscript async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQs-0jPQGY4lv8JP0twTA1qfMmQPaHmlU&callback=initMap">
+    </script>
+    <script type="text/javascript">
+      function get_reminders(cb) {
+        $.support.cors = true;
+        $.ajax({
+          crossDomains:   true,
+          url:      'http://iamresponding.com/v3/AgencyServices.asmx/GetRemindersByMember',
+          data:       'subsString=536871457&days=30',
+          method:     'POST',
+          success: function (data) {
+            var xml = $(data).find('Event');
+            var out = [];
+            for (var n = 0; n < xml.length; ++n) {
+              var ev = xml[n];
+              var subject = $(ev).find('Subject').text();
+              var start = $(ev).find('EventStart').text();
+              var end = $(ev).find('EventEnd').text();
+     if (subject == undefined) {
+                continue;
+     }
+     if (subject.trim() == '') {
+                continue;
+              }
+              out.push({
+                subject:  subject,
+                start:   new Date(start),
+                end:    new Date(end),
+              });               
             }
-        </style>
-        <div style="padding: 20px;">
-        <span style="font-family: monospace; font-size: 6pt; padding: 5px; ">
-            Created by McGuire (kmcg3413@gmail.com)
-        </span>
-        <span id="frame_status" style="font-family: monospace; font-size: 10pt; padding: 20px;">
-        </span>
-        </div>
-        <div id="frame_warning" style="display: none; font-size: 24pt; padding: 0px 0px 0px 20px; font-family: monospace; border: 10px dashed #ff0000; background-color: #ee3333; margin: 15px; color: #000000;"></div>
-        <div class="app">
-            <div id="gmap" style="position: absolute;"></div>
-            <div id="con" style="font-family: monospace; font-size: 15pt;">
-            </div>
-        </div>
-        <div id="frame_alerts" style="font-family: monospace; font-size: 12pt;">
-        </div>
-        <script type="text/javascript" src="cordova.js"></script>
-        <script type="text/javascript" src="./js/jquery.js"></script>
-	<script type="text/javascript" src="js/Insomnia.js"></script>
-        <script type="text/javascript">
-            function initMap() {
-                var map = new google.maps.Map(gmap, {
-                    center: { lat: -32.397, lng: 150.644 },
-                    scrollWheel: false,
-                    zoom: 8,
-                    mapTypeId: google.maps.MapTypeId.SATELLITE,
-                });
+            cb(out);
+          },
+        });
+      }
+      function get_short_date(d) {
+        s = new String(d).split(' ');
+        return s[4] + ' ' + s[1] + ' ' + s[2];
+   }
+      function get_params(cb) {
+        $.support.cors = true;
+        $.ajax({
+          crossDomains:     true,
+          url:        'http://iamresponding.com/v3/AgencyServices.asmx/GetParametersSessionLess',
+          data:         'org=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&masterAdmin=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&agencyLogined=XsDISNWuJRFmH8Dpp0mh7g%3d%3d&member=pRGbni1xiTyo7tooAXMgcw%3d%3d',
+          method:       'POST',
+          success:      function (data) {
+            var xml = $(data).find('Parameters');
+            var params = {};
+            for (var x = 0; x < xml.length; ++x) {
+              var name = $(xml[x]).find('Name').text();
+              var value = $(xml[x]).find('Value').text();  
+              if (params[name] == undefined) {
+                params[name] = [];
+              }
+              params[name].push(value);
+              //console.log('value', value);
             }
-        </script>
-        <xscript async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQs-0jPQGY4lv8JP0twTA1qfMmQPaHmlU&callback=initMap">
-        </script>
-        <script type="text/javascript">
-            function get_reminders(cb) {
-                $.support.cors = true;
-                $.ajax({
-                    crossDomains:   true,
-                    url:            'http://iamresponding.com/v3/AgencyServices.asmx/GetRemindersByMember',
-                    data:           'subsString=536871457&days=30',
-                    method:         'POST',
-                    success: function (data) {
-                        var xml = $(data).find('Event');
-                        var out = [];
-                        for (var n = 0; n < xml.length; ++n) {
-                            var ev = xml[n];
-                            var subject = $(ev).find('Subject').text();
-                            var start = $(ev).find('EventStart').text();
-                            var end = $(ev).find('EventEnd').text();
-			    if (subject == undefined) {
-                                continue;
-			    }
-			    if (subject.trim() == '') {
-                                continue;
-                            }
-                            out.push({
-                                subject:    subject,
-                                start:      new Date(start),
-                                end:        new Date(end),
-                            });                            
-                        }
-                        cb(out);
-                    },
-                });
-            }
-            function get_short_date(d) {
-                s = new String(d).split(' ');
-                return s[4] + ' ' + s[1] + ' ' + s[2];
-			}
-            function get_params(cb) {
-                $.support.cors = true;
-                $.ajax({
-                    crossDomains:       true,
-                    url:                'http://iamresponding.com/v3/AgencyServices.asmx/GetParametersSessionLess',
-                    data:               'org=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&masterAdmin=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&agencyLogined=XsDISNWuJRFmH8Dpp0mh7g%3d%3d&member=pRGbni1xiTyo7tooAXMgcw%3d%3d',
-                    method:             'POST',
-                    success:            function (data) {
-                        var xml = $(data).find('Parameters');
-                        var params = {};
-                        for (var x = 0; x < xml.length; ++x) {
-                            var name = $(xml[x]).find('Name').text();
-                            var value = $(xml[x]).find('Value').text();   
-                            if (params[name] == undefined) {
-                                params[name] = [];
-                            }
-                            params[name].push(value);
-                            //console.log('value', value);
-                        }
-                        cb(params);
-                    },
-                });
-            }
-            function get_personnel(cb) {
-                $.support.cors = true;
-                $.ajax({
-                        crossDomains: true,
-                        url:          'http://iamresponding.com/v3/AgencyServices.asmx/GetOnScheduleWithSort',
-                        data:         'org=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&sort=memberlname asc,memberlname asc&member=pRGbni1xiTyo7tooAXMgcw%3d%3d&flag=0',
-                        method:       'POST',
-                        success: function (data) {
-                            var xmlps = $(data).find('OnSchedule');
-                            per = {};
-                            for (var x = 0; x < xmlps.length; ++x) {
-                                var xmlp = xmlps[x];
-                                var membername = $(xmlp).find('membername').text();
-                                var category = $(xmlp).find('membercat').text();
-                                var group = $(xmlp).find('instationorhome').text();
-                                var arealocation = $(xmlp).find('memberstation').text();
-                                var onduty_until = $(xmlp).find('untilat').text();   
-                                per[membername] = {
-                                    name:          membername,
-                                    category:      category,
-                                    group:         group,
-                                    arealocation:  arealocation,
-                                    onduty_until:  onduty_until,
-                                };
-                            }
-
-                            $.ajax({
-                                crossDomains:    true,
-                                url:             'http://iamresponding.com/v3/AgencyServices.asmx/GetNowRespondingWithSort',
-                                data:            'org=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&member=pRGbni1xiTyo7tooAXMgcw%3d%3d&sort=callingtime desc,callingtime desc&flag=&userType=',
-                                method:          'POST',
-                                success:         function (data) {
-                                    var xmlp = $(data).find('NowResponding');
-                                    for (var x = 0; x < xmlp.length; ++x) {
-                                        var fname = $(xmlp[x]).find('memberfname').text();
-                                        var station =  $(xmlp[x]).find('memberstation').text();
-                                        var cat = $(xmlp[x]).find('membercat').text();
-                                        var callingtime = $(xmlp[x]).find('callingtime').text();
-                                        var eta = $(xmlp[x]).find('eta').text();
-                                        if (fname.trim().length < 1) {
-                                            continue;
-                                        }
-                                        per[fname].arealocation = station;
-                                        per[fname].category = cat;
-                                        per[fname].calltime = callingtime;
-                                        per[fname].calleta = eta;
-                                    }                                    
-                                    cb(per);
-                                },
-                            });
-                        },
-                });
-            }
-            function get_messages(cb) {
-                //alert('fetching messages');
-                //console.log = function (msg) { alert(msg); };
-                $.support.cors = true;
-                $.ajax({
-                        crossDomain:  true,
-                        url:     'http://iamresponding.com/v3/DispatchMessages.asmx/ListWithParser',
-                        data:    'subscriber=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&member=pRGbni1xiTyo7tooAXMgcw%3d%3d&admin=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&agency=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&_=1434747632060',
-                        method:  'POST',
-                        beforeSend:   function (req) {
-                            //'ASP.NET_SessionId=bzse3z3v25j230swmzjwnhho; __utma=173121979.396418310.1434738994.1434738994.1434738994.1; __utmc=173121979; __utmz=173121979.1434738994.1.1.utmccn=(direct)|utmcsr=(direct)|utmcmd=(none); IarSession=Token=bbf36f71-e520-4356-ae5a-aca96f1ebd9e',
-                            //req.setRequestHeader('Cookie', 'hehehe');
-                        },
-                        error: function (req, statmsg, errormsg) {
-                            //alert('error fetching messages: ' + errormsg + ':' + req.url);
-                        },
-                        success: function (data) {
-                            var msgs = $(data).find('DispatchMessages');
-
-                            //alert('got messages');
-
-                            var out = [];
-
-                            for (var ndx = 0; ndx < msgs.length; ++ndx) {
-                                var arrivedon_text = $(msgs[ndx]).find('ArrivedOnString').text();
-                                var text = $(msgs[ndx]).find('MessageBody').text();
-                                //console.log('text', text);
-                                var lines = text.split('<br />').join('').split('\n');
-
-                                var header = null;
-
-                                msg = {};
-
-                                var address0 = null;
-                                var address1 = null;
-                                var units = null;
-                                var subj = null;
-                                var desc = [];
-                                var desc_yank = null;
-
-                                for (var y = 0; y < lines.length; ++y) {
-                                    var line = lines[y];
-
-                                    line = line.trim();
-
-                                    var tmp = line.toUpperCase();
-
-                                    /* first best guess at an address */
-                                    if (!address0 && (tmp.indexOf('ECLECTIC') > -1 || tmp.indexOf('ELMORE') > -1)) {
-                                        address0 = tmp;
-                                        continue;
-                                    }
-
-                                    /* second best guess at an address */
-                                    var do_unit_check = true;
-                                    if (!address1 && (tmp.indexOf('RD') > -1 || tmp.indexOf('AVE') > -1 || tmp.indexOf('LN') > -1 || tmp.indexOf('HWY') > -1)) {
-                                        address1 = tmp;
-                                        do_unit_check = false;
-                                        //console.log('backup-address', tmp);
-                                        desc_yank = desc.length;
-                                    }
-
-                                    if (do_unit_check && !units) {
-                                        var parts = line.toUpperCase().split(' ');
-
-                                        var pass = true;
-
-                                        for (var x = 0; x < parts.length; ++x) {
-                                            var part = parts[x];
-
-                                            if (part.length != 3 && part.length != 4) {
-                                                //console.log('part is length', part.length);
-                                                pass = false;
-                                                break;
-                                            }
-                                        }
-
-                                        if (pass) {
-                                            desc_yank = null;
-                                            units = line.toUpperCase();
-                                            continue;
-                                        }
-                                    }
-
-                                    if (line.indexOf('Call Received Time:') == 0) {
-                                        // Call Received Time: 9/28/2015 12:50:28 PM Dispatch: 9/28/2015 1:08:27 PM Enroute: 13:08:38 OnScene: 13:17:24 Depart: 13:41:39 Comp: 13:49:04
-                                        for (var x = 0; x < line.length; ++x) {
-
-                                        }
-                                        desc_yank = null;
-                                        continue;
-                                    }
-
-                                    if (line.indexOf(':') > -1) {
-                                        line = line.substr(line.indexOf(':') + 1);
-                                    }
-
-                                    if (line.trim().length < 1) {
-                                        desc_yank = null;
-                                        continue;
-                                    }
-
-                                    //console.log('looking', line);
-
-                                    line = line.trim();
-
-                                    desc.push(line);
-                                }
-
-                                var address;
-
-                                if (address0) {
-                                    address = address0;
-                                } else {
-                                    if (desc_yank) {
-                                        desc.remove(desc_yank);
-                                    }
-                                    address = address1;
-                                }
-
-                                subject = desc.shift();
-
-                                var arrivedon = new Date(arrivedon_text);
-
-                                msg = {
-                                    arrived_on:     arrivedon,
-                                    address:        address,
-                                    units:          units,
-                                    subject:        subject,
-                                    desc:           desc,
-                                };
-
-                                msg.get_short_date = function () {
-                                    var s = this.arrived_on;
-                                    s = new String(s).split(' ');
-                                    return s[4] + ' ' + s[1] + ' ' + s[2];
-								};
-
-                                //console.log(msg);
-
-                                out.push(msg);
-                            }
-
-                            console.log('done');
-
-                            cb(out);
-                        }
-                });
-                //alert('asycn handoff complete');
-            }
-
-            function con_buffer_init(w, h) {
-                var buf = [];
-                var fg = [];
-                var bg = [];
-                for (var n = 0; n < w * h; ++n) {
-                    buf.push('&nbsp;');
-                    fg.push(230);
-                    fg.push(230);
-                    fg.push(230);
-                    bg.push(0);
-                    bg.push(0);
-                    bg.push(0);
-                    bg.push(0);
+            cb(params);
+          },
+        });
+      }
+      function get_personnel(cb) {
+        $.support.cors = true;
+        $.ajax({
+            crossDomains: true,
+            url:     'http://iamresponding.com/v3/AgencyServices.asmx/GetOnScheduleWithSort',
+            data:      'org=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&sort=memberlname asc,memberlname asc&member=pRGbni1xiTyo7tooAXMgcw%3d%3d&flag=0',
+            method:    'POST',
+            success: function (data) {
+              var xmlps = $(data).find('OnSchedule');
+              per = {};
+              for (var x = 0; x < xmlps.length; ++x) {
+                var xmlp = xmlps[x];
+                var membername = $(xmlp).find('membername').text();
+                var category = $(xmlp).find('membercat').text();
+                var group = $(xmlp).find('instationorhome').text();
+                var arealocation = $(xmlp).find('memberstation').text();
+                var onduty_until = $(xmlp).find('untilat').text(); 
+                if (membername.trim().length == 0) {
+               continue;
                 }
-                return {
-                    fg:     fg,
-                    bg:     bg,
-                    buf:    buf,
-                    w:      w,
-                    h:      h,
-                    lx:     -1,
-                    ly:     0,
-                    write:  function(params) {
-                        if (params.x == undefined) {
-                            params.x = this.lx + 1;
-                        }
-                        if (params.y == undefined) {
-                            params.y = this.ly;
-                        }
-
-                        params.w = params.w || params.text.length;
-
-                        params.fg = params.fg || [230, 230, 230];
-                        params.bg = params.bg || [0, 0, 0, 0];
-
-                        //console.log('??', params.x, params.y);
-
-                        for (var n = 0; n < params.w; ++n) {
-                            var x = params.x + n;
-                            var y = Math.floor(x / this.w);
-                            x = x - (y * this.w);
-                            y += params.y;
-                            this.lx = x;
-                            this.ly = y;
-                            if (n < params.text.length) {
-                                this.buf[x + y * this.w] = params.text[n];
-                            } else {
-                                this.buf[x + y * this.w] = '&nbsp;';
-                            }
-                            this.fg[(x + y * this.w) * 3] = params.fg;
-                            this.bg[(x + y * this.w) * 4] = params.bg;
-                        }
-                    },
-                    flushto:  function(con) {
-                        $(con).empty();
-                        console.log(this); 
-
-                        for (var y = 0; y < this.h; ++y) {
-                            /* find entire segment of same color */
-
-                            var s = 0;
-                            while (s < this.w) {
-                                var cfg = this.fg[(y * this.w + s) * 3];
-                                var cbg = this.bg[(y * this.w + s) * 4];
-                                var begin = s;
-                                for (; s < this.w; ++s) {
-                                    var _fg = this.fg[(y * this.w + s) * 3];
-                                    var _bg = this.bg[(y * this.w + s) * 4];
-                                    if (_fg[0] != cfg[0] || _fg[1] != cfg[1] || _fg[2] != cfg[2] ||
-                                        _bg[0] != cbg[0] || _bg[1] != cbg[1] || _bg[2] != cbg[2] ||
-                                        _bg[3] != cbg[3]) {
-                                        break;
-                                    }
-                                }
-
-                                var line = this.buf.slice(y * this.w + begin, y * this.w + s).join('');
-                            
-                                var el = document.createElement('span');
-                                el.style.padding = '0px 5px 0px 5px';
-                                el.style.color = 'rgb(' + cfg[0] + ',' + cfg[1] + ',' + cfg[2] + ')';
-                                el.style['background-color'] = 'rgba(' + cbg[0] + ',' + cbg[1] + ',' + cbg[2] + ',' + cbg[3] + ')';
-                                $(el).append(line);
-                                $(con).append(el); 
-                            }                               
-                            $(con).append('<br/>');
-                        }
-                    }
+                per[membername] = {
+                  name:      membername,
+                  category:    category,
+                  group:    group,
+                  arealocation:  arealocation,
+                  onduty_until:  onduty_until,
                 };
-            }
+              }
 
-            frame_status.xrender = function () {
-                var delta = this.seconds_since_update();
-                $(this).empty();
-                $(this).append(
-                    'Updates: ' + this.update_count + ' ' +
-                    'Fetches: ' + this.fetch_count + ' ' +
-                    'Status: ' + this.msg + ' ' +
-                    'Last updated ' + delta + ' seconds ago...'
-                );
-            };
+              $.ajax({
+                crossDomains:   true,
+                url:       'http://iamresponding.com/v3/AgencyServices.asmx/GetNowRespondingWithSort',
+                data:       'org=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&member=pRGbni1xiTyo7tooAXMgcw%3d%3d&sort=callingtime desc,callingtime desc&flag=&userType=',
+                method:      'POST',
+                success:     function (data) {
+                  var xmlp = $(data).find('NowResponding');
+                  for (var x = 0; x < xmlp.length; ++x) {
+                    var fname = $(xmlp[x]).find('memberfname').text();
+                    var station =  $(xmlp[x]).find('memberstation').text();
+                    var cat = $(xmlp[x]).find('membercat').text();
+                    var callingtime = $(xmlp[x]).find('callingtime').text();
+                    var eta = $(xmlp[x]).find('eta').text();
+                    if (fname.trim().length < 1) {
+                      continue;
+                    }
+                    per[fname].arealocation = station;
+                    per[fname].category = cat;
+                    per[fname].calltime = callingtime;
+                    per[fname].calleta = eta;
+                  }                   
+                  cb(per);
+                },
+              });
+            },
+        });
+      }
+      function get_messages(cb) {
+        //alert('fetching messages');
+        //console.log = function (msg) { alert(msg); };
+        $.support.cors = true;
+        $.ajax({
+            crossDomain: true,
+            url:   'http://iamresponding.com/v3/DispatchMessages.asmx/ListWithParser',
+            data:   'subscriber=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&member=pRGbni1xiTyo7tooAXMgcw%3d%3d&admin=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&agency=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&_=1434747632060',
+            method:  'POST',
+            beforeSend:  function (req) {
+              //'ASP.NET_SessionId=bzse3z3v25j230swmzjwnhho; __utma=173121979.396418310.1434738994.1434738994.1434738994.1; __utmc=173121979; __utmz=173121979.1434738994.1.1.utmccn=(direct)|utmcsr=(direct)|utmcmd=(none); IarSession=Token=bbf36f71-e520-4356-ae5a-aca96f1ebd9e',
+              //req.setRequestHeader('Cookie', 'hehehe');
+            },
+            error: function (req, statmsg, errormsg) {
+              //alert('error fetching messages: ' + errormsg + ':' + req.url);
+            },
+            success: function (data) {
+              var msgs = $(data).find('DispatchMessages');
 
-            frame_status.msg = '';
-            frame_status.update_count = 0;
-            frame_status.fetch_count = 0;
-            frame_status.last_update = new Date();
+              //alert('got messages');
 
-            //console.log('@@@', frame_status.xrender);
+              var out = [];
 
-            setInterval(function () {
-                var delta = frame_status.seconds_since_update();
-                if (delta > 30) { 
-                    $(frame_warning).empty();
-                    $(frame_warning).show();
-                    $(frame_warning).append('WARNING: CHECK INTERNET... ' + Math.floor(delta) + ' SECONDS OFFLINE');
-                } else {
-                    $(frame_warning).hide();
+              for (var ndx = 0; ndx < msgs.length; ++ndx) {
+                var arrivedon_text = $(msgs[ndx]).find('ArrivedOnString').text();
+                var text = $(msgs[ndx]).find('MessageBody').text();
+                //console.log('text', text);
+                var lines = text.split('<br />').join('').split('\n');
+
+                var header = null;
+
+                msg = {};
+
+                var address0 = null;
+                var address1 = null;
+                var units = null;
+                var subj = null;
+                var desc = [];
+                var desc_yank = null;
+
+                for (var y = 0; y < lines.length; ++y) {
+                  var line = lines[y];
+
+                  line = line.trim();
+
+                  var tmp = line.toUpperCase();
+
+                  /* first best guess at an address */
+                  if (!address0 && (tmp.indexOf('ECLECTIC') > -1 || tmp.indexOf('ELMORE') > -1)) {
+                    address0 = tmp;
+                    continue;
+                  }
+
+                  /* second best guess at an address */
+                  var do_unit_check = true;
+                  if (!address1 && (tmp.indexOf('RD') > -1 || tmp.indexOf('AVE') > -1 || tmp.indexOf('LN') > -1 || tmp.indexOf('HWY') > -1)) {
+                    address1 = tmp;
+                    do_unit_check = false;
+                    //console.log('backup-address', tmp);
+                    desc_yank = desc.length;
+                  }
+
+                  if (do_unit_check && !units) {
+                    var parts = line.toUpperCase().split(' ');
+
+                    var pass = true;
+
+                    for (var x = 0; x < parts.length; ++x) {
+                      var part = parts[x];
+
+                      if (part.length != 3 && part.length != 4) {
+                        //console.log('part is length', part.length);
+                        pass = false;
+                        break;
+                      }
+                    }
+
+                    if (pass) {
+                      desc_yank = null;
+                      units = line.toUpperCase();
+                      continue;
+                    }
+                  }
+
+                  if (line.indexOf('Call Received Time:') == 0) {
+                    // Call Received Time: 9/28/2015 12:50:28 PM Dispatch: 9/28/2015 1:08:27 PM Enroute: 13:08:38 OnScene: 13:17:24 Depart: 13:41:39 Comp: 13:49:04
+                    for (var x = 0; x < line.length; ++x) {
+
+                    }
+                    desc_yank = null;
+                    continue;
+                  }
+
+                  if (line.indexOf(':') > -1) {
+                    line = line.substr(line.indexOf(':') + 1);
+                  }
+
+                  if (line.trim().length < 1) {
+                    desc_yank = null;
+                    continue;
+                  }
+
+                  //console.log('looking', line);
+
+                  line = line.trim();
+
+                  desc.push(line);
                 }
-            }, 3000);
 
-            frame_status.seconds_since_update = function () {
-                return (new Date().getTime() - this.last_update) / 1000;
-            };
+                var address;
 
-            frame_status.set_message = function (msg) {
-                this.msg = msg;
-                this.xrender();
-            };
+                if (address0) {
+                  address = address0;
+                } else {
+                  if (desc_yank) {
+                    desc.remove(desc_yank);
+                  }
+                  address = address1;
+                }
 
-            frame_status.inc_update_count = function () {
-                this.update_count++;
-                this.last_update = (new Date()).getTime();
-                this.xrender();
-            };
+                subject = desc.shift();
 
-            frame_status.inc_fetch_count = function() {
-                this.fetch_count++;
-                this.xrender();
-            };
+                var arrivedon = new Date(arrivedon_text);
 
-            // This could be very helpful for production debugging.
-            console.log = function (msg) {
-                frame_status.set_message(msg);
+                msg = {
+                  arrived_on:   arrivedon,
+                  address:    address,
+                  units:     units,
+                  subject:    subject,
+                  desc:       desc,
+                };
+
+                msg.get_short_date = function () {
+                  var s = this.arrived_on;
+                  s = new String(s).split(' ');
+                  return s[4] + ' ' + s[1] + ' ' + s[2];
+                };
+
+                //console.log(msg);
+
+                out.push(msg);
+              }
+
+              console.log('done');
+
+              cb(out);
+            }
+        });
+        //alert('asycn handoff complete');
+      }
+
+      function con_buffer_init(con, w, h) {
+        var buf = [];
+
+        $(con).empty();
+        for (var n = 0; n < w * h; ++n) {
+          //buf.push(' ');  
+          if (n >= w && (n % w == 0)) {
+            $(con).append('<br/>');
+          }
+          var el = document.createElement('span');
+          el.innerHTML = 'X';
+          el.style.color = 'rgb(255, 0, 0)';
+          el.style['background-color'] = 'rgba(0, 0, 0, 0)';
+          $(con).append(el);
+          buf.push(el);
+        }
+        return {
+          buf:  buf,
+          w:   w,
+          h:   h,
+          lx:   -1,
+          ly:   0,
+          clear: function() {
+            for (var i = 0; i < this.w * this.h; ++i) {
+              this.buf[i].innerHTML = '&nbsp;';
+            }
+          },
+          write: function(params) {
+            if (params.x == undefined) {
+              params.x = this.lx + 1;
+            }
+            if (params.y == undefined) {
+              params.y = this.ly;
             }
 
-            function con_render(con) {
+            params.w = params.w || params.text.length;
 
-                var buf = con_buffer_init(100, 20);
+            params.fg = params.fg || [230, 230, 230];
+            params.bg = params.bg || [0, 0, 0, 0];
 
-                frame_status.inc_fetch_count();
-                frame_status.set_message('Fetching data from IAR server..');
+            var fr = params.fg[0];
+            var fg = params.fg[1];
+            var fb = params.fg[2];
+            var br = params.bg[0];
+            var bg = params.bg[1];
+            var bb = params.bg[2];
+            var ba = params.bg[3];
 
-                get_messages(function (msgs) { 
-                get_personnel(function (persons) {
-                get_reminders(function (reminders) {
-                get_params(function (params) {
-                    frame_status.inc_update_count();
-                    frame_status.set_message('Rendering data from IAR server..');
+            var x;
+            var y;
+            for (var n = 0; n < params.w; ++n) {
+              x = params.x + n;
+              y = Math.floor(x / this.w);
+              x = x - (y * this.w);
+              y += params.y;
+              this.lx = x;
+              this.ly = y;
+              var el = this.buf[x + y * this.w];
+              if (n < params.text.length) {
+                el.innerHTML = params.text[n];
+              } else {
+                el.innerHTML = '&nbsp;';             
+              }
+              el.style.color = 'rgb(' + fr + ',' + fg + ',' + fb + ')';
+              el.style['background-color'] = 'rgba(' + br + ',' + bg + ',' + bb + ',' + ba + ')';
+            }
+            this.buf[x + y * this.w].innerHTML += '&nbsp;';
+          },
+        };
+      }
 
-                    $(con).empty();
-                    $(con).append('It is partially working.');
-                    //return;
-                    var col_colors = [[99, 99, 99, 255], [77, 77, 77, 255]];
-                    var col_colors_ndx = 0;
-                    var col_colors_get = function () {
-                        var tmp = col_colors_ndx;
-                        col_colors_ndx = (col_colors_ndx + 1) % col_colors.length;
-                        return col_colors[tmp];
-                    };
-                    
-                    var col_colors_rst = function () {
-                        col_colors_ndx = 0;
-                    };
-                       
-                    var msgs_y_offset;
+      frame_status.xrender = function () {
+        var delta = this.seconds_since_update();
+        $(this).empty();
+        this.innerHTML = 
+          'Updates: ' + this.update_count + ' ' +
+          'Fetches: ' + this.fetch_count + ' ' +
+          'Status: ' + this.msg + ' ' +
+          'Last updated ' + delta + ' seconds ago...'
+        ;
+      };
 
-                    function break_name_into_parts(name) {
-                        var a = name.indexOf('(');
-                        var b = name.indexOf(')');
-                        if (a < 0 || b < 0 || b < a || b == a) {
-                            return [null, name];
-                        }
-                        var num = name.substr(a + 1, b - 1);
-                        if (isNaN(num)) {
-                            console.log('@', num);
-                            return [null, name];
-                        }    
+      frame_status.msg = '';
+      frame_status.update_count = 0;
+      frame_status.fetch_count = 0;
+      frame_status.last_update = new Date();
 
-                        return [parseInt(num), name.substr(0, a) + name.substr(b + 1)];  
-                    }
+      //console.log('@@@', frame_status.xrender);
 
-                    tmp = [];
-                    for (var k in persons) {
-                        var r = break_name_into_parts(persons[k].name);
-                        persons[k].fdid = r[0];
-                        persons[k].name = r[1];
-                        tmp.push(persons[k]);
-                    }
-                    persons = tmp;
+      setInterval(function () {
+        var delta = frame_status.seconds_since_update();
+        if (delta > 30) {
+          $(frame_warning).show();
+          frame_warning.innerHTML = 'WARNING: CHECK INTERNET... ' + Math.floor(delta) + ' SECONDS OFFLINE';
+        } else {
+          $(frame_warning).hide();
+        }
+      }, 3000);
+
+      frame_status.seconds_since_update = function () {
+        return (new Date().getTime() - this.last_update) / 1000;
+      };
+
+      frame_status.set_message = function (msg) {
+        this.msg = msg;
+        this.xrender();
+      };
+
+      frame_status.inc_update_count = function () {
+        this.update_count++;
+        this.last_update = (new Date()).getTime();
+        this.xrender();
+      };
+
+      frame_status.inc_fetch_count = function() {
+        this.fetch_count++;
+        this.xrender();
+      };
+
+      // This could be very helpful for production debugging.
+      console.log = function (msg) {
+        frame_status.set_message(msg);
+      }
 
 
-                    persons.sort(function (ap, bp) {
-                        // 1 if a is greater
-                        // 0 if they are the same
-                        // -1 if b is lesser 
-                        if (ap.fdid < bp.fdid) { return -1; }
-                        if (ap.fdid > bp.fdid) { return 1; }
-                        return 0;
-                    });
+      var col_colors = [[99, 99, 99, 255], [77, 77, 77, 255]];
+      var col_colors_ndx = 0;
+      var col_colors_get = function () {
+      var tmp = col_colors_ndx;
+        col_colors_ndx = (col_colors_ndx + 1) % col_colors.length;
+        return col_colors[tmp];
+      };
 
-                    for (var n = 0; n < persons.length; ++n) {
-                        var person = persons[n];
-                        console.log('person', person);
+      var col_colors_rst = function () {
+        col_colors_ndx = 0;
+      };
 
-                        msgs_y_offset = n + 1;
+      var buf = con_buffer_init(con, 100, 20);
+      
+      function con_render(con) {
+        frame_status.inc_fetch_count();
+        frame_status.set_message('Fetching data from IAR server..');
 
-                        var inactive = false;
-                        var isems;
+        get_messages(function (msgs) { 
+        get_personnel(function (persons) {
+        get_reminders(function (reminders) {
+        get_params(function (params) {
+          frame_status.inc_update_count();
+          frame_status.set_message('Rendering data from IAR server..');
+              
+          buf.clear();
+            
+          var msgs_y_offset;
 
-                        var fgcolor = [0xdd, 0xdd, 0xdd];
-                        var bgcolor = [99, 99, 99, 255];
+          function break_name_into_parts(name) {
+            var a = name.indexOf('(');
+            var b = name.indexOf(')');
+            if (a < 0 || b < 0 || b < a || b == a) {
+              return [null, name];
+            }
+            var num = name.substr(a + 1, b - 1);
+            if (isNaN(num)) {
+              console.log('@', num);
+              return [null, name];
+            }   
 
-                        if (person.arealocation.toLowerCase().indexOf('o.o.t') > -1) {
-                            state = 'INACTIVE';
-                            state_fg = [0xbb, 0xbb, 0xbb];
-                            state_bg = [0, 0, 0, 255];
-                            inactive = true;
-                        }
+            return [parseInt(num), name.substr(0, a) + name.substr(b + 1)];  
+          }
 
-                        if (person.group.toLowerCase().indexOf('unavail') > -1) {
-                            fgcolor = [0x44, 0x44, 0x44];
-                            inactive = true;
-                        }
-                
-                        if (person.group.toLowerCase().indexOf('ems') > -1) {
-                            bgcolor = [0x40, 0x40, 0xa0, 255];
-                            isems = true;
-                        } else {
-                            bgcolor = [0xa0, 0x40, 0x40, 255];
-                            isems = false;
-                        }
-                        
-                        if (person.calltime && person.calltime.length) {
-                            state = 'RESPONDING';
-                            state_fg = [0, 0, 0];
-                            state_bg = [0, 0x99, 0, 255];
-                        } else {
-                            if (!inactive) {
-                                state = 'ON DUTY';
-                                state_fg = [190, 190, 190];
-                                state_bg = [40, 40, 40, 255];
-                            }
-                        }
+          console.log('breaking out fire department id on personnel');
 
-                        var shade = 0.9;
+          tmp = [];
+          for (var k in persons) {
+            var r = break_name_into_parts(persons[k].name);
+            persons[k].fdid = r[0];
+            persons[k].name = r[1];
+            tmp.push(persons[k]);
+          }
+          persons = tmp;
 
-                        function doshade(rgba, co) {
-                            return [
-                                Math.floor(rgba[0] * co),
-                                Math.floor(rgba[1] * co),
-                                Math.floor(rgba[2] * co),
-                                Math.floor(rgba[3]),
-                            ];
-                        }
+          console.log('sorting personnel');
 
-                        buf.write({
-                            x:      0,
-                            y:      n,
-                            text:   state,
-                            w:      15,
-                            bg:     state_bg,
-                            fg:     state_fg,
-                        });
+          persons.sort(function (ap, bp) {
+            // 1 if a is greater
+            // 0 if they are the same
+            // -1 if b is lesser 
+            if (ap.fdid < bp.fdid) { return -1; }
+            if (ap.fdid > bp.fdid) { return 1; }
+            return 0;
+          });
 
-                        buf.write({
-                            text:   new String(person.fdid || ' '),
-                            w:      5,
-                            bg:     bgcolor,
-                            fg:     fgcolor,
-                        });                       
+          console.log('personnel loop');
+
+          msgs_y_offset = 0;
+
+          for (var n = 0; n < persons.length; ++n) {
+            var person = persons[n];
+            console.log('person', person);
+
+            msgs_y_offset = n + 1;
+
+            var inactive = false;
+            var isems;
+
+            var fgcolor = [0xdd, 0xdd, 0xdd];
+            var bgcolor = [99, 99, 99, 255];
+
+            if (person.arealocation.toLowerCase().indexOf('o.o.t') > -1) {
+              state = 'INACTIVE';
+              state_fg = [0xbb, 0xbb, 0xbb];
+              state_bg = [0, 0, 0, 255];
+              inactive = true;
+            }
+
+            if (person.group.toLowerCase().indexOf('unavail') > -1) {
+              fgcolor = [0x44, 0x44, 0x44];
+              inactive = true;
+            }
+        
+            if (person.group.toLowerCase().indexOf('ems') > -1) {
+              bgcolor = [0x40, 0x40, 0xa0, 255];
+              isems = true;
+            } else {
+              bgcolor = [0xa0, 0x40, 0x40, 255];
+              isems = false;
+            }
+            
+            if (person.calltime && person.calltime.length) {
+              state = 'RESPONDING';
+              state_fg = [0, 0, 0];
+              state_bg = [0, 0x99, 0, 255];
+            } else {
+              if (!inactive) {
+                state = 'ON DUTY';
+                state_fg = [190, 190, 190];
+                state_bg = [40, 40, 40, 255];
+              }
+            }
+
+            var shade = 0.9;
+
+            function doshade(rgba, co) {
+              return [
+                Math.floor(rgba[0] * co),
+                Math.floor(rgba[1] * co),
+                Math.floor(rgba[2] * co),
+                Math.floor(rgba[3]),
+              ];
+            }
+
+            buf.write({
+              x:   0,
+              y:   n,
+              text:   state,
+              w:   15,
+              bg:   state_bg,
+              fg:   state_fg,
+            });
+
+            buf.write({
+              text:   new String(person.fdid || ' '),
+              w:   5,
+              bg:   bgcolor,
+              fg:   fgcolor,
+            });            
  
-                        buf.write({
-                            text:   person.name,
-                            w:      25,
-                            bg:     doshade(bgcolor, shade),
-                            fg:     fgcolor,
-                        });   
+            buf.write({
+              text:   person.name,
+              w:   25,
+              bg:   doshade(bgcolor, shade),
+              fg:   fgcolor,
+            });  
 
-                        buf.write({
-                            text:   person.category,
-                            w:      20,
-                            bg:     bgcolor,
-                            fg:     fgcolor,
-                        });
+            buf.write({
+              text:   person.category,
+              w:   20,
+              bg:   bgcolor,
+              fg:   fgcolor,
+            });
 
-                        buf.write({
-                            text:   person.arealocation,
-                            w:      10,
-                            bg:     doshade(bgcolor, shade),
-                            fg:     fgcolor,
-                        });
-    
-                        buf.write({
-                            text:   person.onduty_until,
-                            w:      15,
-                            bg:     bgcolor,
-                            fg:     fgcolor,
-                        });
-                    }
+            buf.write({
+              text:   person.arealocation,
+              w:   10,
+              bg:   doshade(bgcolor, shade),
+              fg:   fgcolor,
+            });
+  
+            buf.write({
+              text:   person.onduty_until,
+              w:   15,
+              bg:   bgcolor,
+              fg:   fgcolor,
+            });
+          }
 
-                    console.log('params', params);
+          console.log('params', params);
 
-                    msgs_y_offset++;
-                    for (var n = 0; n < reminders.length; n++, msgs_y_offset += 2) {
-                        var remin = reminders[n];
-                        buf.write({
-                            x:          0,
-                            y:          msgs_y_offset,
-                            text:       'Reminder [ ' + get_short_date(remin.start) + ' TO ' + get_short_date(remin.end) + ' ]',
-                            w:          80,
-                            bg:         [33, 33, 33, 255],
-                            fg:         [180, 180, 180],
-                        });       
-                        buf.write({
-                            x:          0,
-                            y:          msgs_y_offset + 1,
-                            text:       '&nbsp;&nbsp;' + remin.subject,
-                            w:          80,
-                            bg:         [33, 33, 33, 255],
-                            fg:         [190, 190, 190],
-                        });
-                    }
+          msgs_y_offset++;
+          for (var n = 0; n < reminders.length; n++, msgs_y_offset += 2) {
+            var remin = reminders[n];
+            buf.write({
+              x:     0,
+              y:     msgs_y_offset,
+              text:     'Reminder [ ' + get_short_date(remin.start) + ' TO ' + get_short_date(remin.end) + ' ]',
+              w:     80,
+              bg:     [33, 33, 33, 255],
+              fg:     [180, 180, 180],
+            });    
+            buf.write({
+              x:     0,
+              y:     msgs_y_offset + 1,
+              text:     '  ' + remin.subject,
+              w:     80,
+              bg:     [33, 33, 33, 255],
+              fg:     [190, 190, 190],
+            });
+          }
 
-                    ++msgs_y_offset;
+          ++msgs_y_offset;
 
-                    $(frame_alerts).empty();
-                    for (var n = 0; n < params.OnScreenContent.length; n++) {
-                        var v = params.OnScreenContent[n];
-                        $(frame_alerts).append(v + '<br/>');
-                    }
+          //$(frame_alerts).empty();
+          for (var n = 0; n < params.OnScreenContent.length; n++) {
+            var v = params.OnScreenContent[n];
+            //$(frame_alerts).append(v + '<br/>');
+          }
 
-                    var tmp = [msgs[0]];
-                    
-                    for (var n = 1; n < msgs.length; ++n) {
-                        var lst = tmp[tmp.length - 1];
-                        var msg = msgs[n];
+          var tmp = [msgs[0]];
+          
+          for (var n = 1; n < msgs.length; ++n) {
+            var lst = tmp[tmp.length - 1];
+            var msg = msgs[n];
 
-                        if (lst.subject == msg.subject && lst.address == msg.address) {
-                            var a = lst.units.split(' ');
-                            var b = msg.units.split(' ');
-                            var units = {};
-                            for (var x = 0; x < a.length; ++x) {
-                                units[a[x]] = true;
-                            }
-                            for (var x = 0; x < b.length; ++x) {
-                                units[b[x]] = true;
-                            }
-                            var _units = [];
-                            for (var k in units) {
-                                _units.push(k);
-                            }
-                            lst.units = _units.join(' ');
-                            continue;
-                        }
-                        tmp.push(msg);
-                    }
-
-                    msgs = tmp;
-
-                    frame_status.set_message('Writing incident messages..');
-                    for (var n = 0; n < msgs.length; ++n) {
-                        //console.log('@', msgs[x]);
-                        //for (var k in msgs[x]) {
-                        //    $(con).append(k + ':' + msgs[x].subject);
-                        //}
-
-                        var msg = msgs[n];
-
-                        col_colors_rst();                        
-
-                        buf.write({
-                            x:       0,
-                            y:       n + msgs_y_offset,
-                            bg:      col_colors_get(),
-                            text:    new String(msgs[n].get_short_date()),
-                            w:       15,
-                        });
-
-                        buf.write({
-                            bg:     col_colors_get(),
-                            text:   msg.subject,
-                            w:      10,
-                        });
-
-                        buf.write({
-                            bg:     col_colors_get(),
-                            text:   msg.address,
-                            w:      30,
-                        });
-
-                        buf.write({
-                            bg:     col_colors_get(),
-                            text:   msg.desc.join(' '),
-                            w:      25,
-                        });
-
-                        buf.write({
-                            bg:     col_colors_get(),
-                            text:   msg.units,
-                            w:      20,
-                        });
-                    }
-
-                    frame_status.set_message('Writing data to the screen...');
-                    buf.flushto(con);
-                    frame_status.set_message('DONE OK');
-                })})})});
+            if (lst.subject == msg.subject && lst.address == msg.address) {
+              var a = lst.units.split(' ');
+              var b = msg.units.split(' ');
+              var units = {};
+              for (var x = 0; x < a.length; ++x) {
+                units[a[x]] = true;
+              }
+              for (var x = 0; x < b.length; ++x) {
+                units[b[x]] = true;
+              }
+              var _units = [];
+              for (var k in units) {
+                _units.push(k);
+              }
+              lst.units = _units.join(' ');
+              continue;
             }
-        </script>
-    </body>
+            tmp.push(msg);
+          }
+
+          msgs = tmp;
+
+          frame_status.set_message('Writing incident messages..');
+          for (var n = 0; n < msgs.length; ++n) {
+            //console.log('@', msgs[x]);
+            //for (var k in msgs[x]) {
+            //  $(con).append(k + ':' + msgs[x].subject);
+            //}
+
+            var msg = msgs[n];
+
+            col_colors_rst();             
+
+            buf.write({
+              x:   0,
+              y:   n + msgs_y_offset,
+              bg:    col_colors_get(),
+              text:   new String(msgs[n].get_short_date()),
+              w:   15,
+            });
+
+            buf.write({
+              bg:   col_colors_get(),
+              text:   msg.subject,
+              w:   10,
+            });
+
+            buf.write({
+              bg:   col_colors_get(),
+              text:   msg.address,
+              w:   30,
+            });
+
+            buf.write({
+              bg:   col_colors_get(),
+              text:   msg.desc.join(' '),
+              w:   25,
+            });
+
+            buf.write({
+              bg:   col_colors_get(),
+              text:   msg.units,
+              w:   20,
+            });
+          }
+          frame_status.set_message('DONE OK');
+        })})})});
+      }
+    </script>
+  </body>
 </html>
