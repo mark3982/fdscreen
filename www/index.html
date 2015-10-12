@@ -20,8 +20,10 @@
    if (window && window.plugins && windows.plugins.insomnia) {
      window.plugins.insomnia.keepAwake();
    } else {
-        alert('An error occured while trying to prevent the screen from sleeping.');
-      }
+    alert('An error occured while trying to prevent the screen from sleeping.');
+   }
+
+   var start_time = (new Date()).getTime();
 
    function app_init() {
     window.addEventListener('message', function (e) {
@@ -34,6 +36,10 @@
           }, 5000);
           break;
           case 'tick':
+            if ((new Date()).getTime() - start_time > 3600) {
+              super.setIntegerProperty('loadUrlTimeoutValue', 60000);
+              super.loadUrl('file:///android_asset/WWW/index.html');
+            }
             con_render(con);
             break;
       }
