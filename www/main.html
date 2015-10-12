@@ -20,8 +20,10 @@
    if (window && window.plugins && windows.plugins.insomnia) {
      window.plugins.insomnia.keepAwake();
    } else {
-        alert('An error occured while trying to prevent the screen from sleeping.');
-      }
+    alert('An error occured while trying to prevent the screen from sleeping.');
+   }
+
+   var start_time = (new Date()).getTime();
 
    function app_init() {
     window.addEventListener('message', function (e) {
@@ -34,6 +36,9 @@
           }, 5000);
           break;
           case 'tick':
+            if ((new Date()).getTime() - start_time > 3600 * 1000) {
+              window.location.reload(true);
+            }
             con_render(con);
             break;
       }
@@ -375,6 +380,7 @@
           clear: function() {
             for (var i = 0; i < this.w * this.h; ++i) {
               this.buf[i].innerHTML = '&nbsp;';
+              this.buf[i].style['background-color'] = 'rgba(0, 0, 0, 0)';
             }
           },
           write: function(params) {
@@ -670,10 +676,10 @@
 
           ++msgs_y_offset;
 
-          //$(frame_alerts).empty();
+          $(frame_alerts).empty();
           for (var n = 0; n < params.OnScreenContent.length; n++) {
             var v = params.OnScreenContent[n];
-            //$(frame_alerts).append(v + '<br/>');
+            $(frame_alerts).append(v + '<br/>');
           }
 
           var tmp = [msgs[0]];

@@ -36,9 +36,8 @@
           }, 5000);
           break;
           case 'tick':
-            if ((new Date()).getTime() - start_time > 3600) {
-              super.setIntegerProperty('loadUrlTimeoutValue', 60000);
-              super.loadUrl('file:///android_asset/WWW/index.html');
+            if ((new Date()).getTime() - start_time > 3600 * 1000) {
+              window.location.reload(true);
             }
             con_render(con);
             break;
