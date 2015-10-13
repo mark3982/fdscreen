@@ -412,6 +412,11 @@
 
             var x;
             var y;
+
+	    if (params.text && params.text.length >= this.w) {
+	      params.text = params.text.substr(0, this.w - 2);
+	    }
+
             for (var n = 0; n < params.w; ++n) {
               x = params.x + n;
               y = Math.floor(x / this.w);
@@ -420,6 +425,7 @@
               this.lx = x;
               this.ly = y;
               var el = this.buf[x + y * this.w];
+
               if (params.text && n < params.text.length) {
                 el.innerHTML = params.text[n];
               } else {
@@ -428,7 +434,7 @@
               el.style.color = 'rgb(' + fr + ',' + fg + ',' + fb + ')';
               el.style['background-color'] = 'rgba(' + br + ',' + bg + ',' + bb + ',' + ba + ')';
             }
-            this.buf[x + y * this.w].innerHTML += '&nbsp;';
+            //this.buf[x + y * this.w].innerHTML += '&nbsp;';
           },
         };
       }
@@ -652,7 +658,7 @@
 
             buf.write({
               text:   person.arealocation,
-              w:   10,
+              w:    15,
               bg:   doshade(bgcolor, shade),
               fg:   fgcolor,
             });
