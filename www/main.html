@@ -160,13 +160,13 @@
               per = {};
               for (var x = 0; x < xmlps.length; ++x) {
                 var xmlp = xmlps[x];
-                var membername = $(xmlp).find('membername').text();
-                var category = $(xmlp).find('membercat').text();
-                var group = $(xmlp).find('instationorhome').text();
-                var arealocation = $(xmlp).find('memberstation').text();
-                var onduty_until = $(xmlp).find('untilat').text(); 
+                var membername = $(xmlp).find('membername').text().trim();
+                var category = $(xmlp).find('membercat').text().trim();
+                var group = $(xmlp).find('instationorhome').text().trim();
+                var arealocation = $(xmlp).find('memberstation').text().trim();
+                var onduty_until = $(xmlp).find('untilat').text().trim(); 
                 if (membername.trim().length == 0) {
-               continue;
+		  continue;
                 }
                 per[membername] = {
                   name:      membername,
@@ -185,18 +185,24 @@
                 success:     function (data) {
                   var xmlp = $(data).find('NowResponding');
                   for (var x = 0; x < xmlp.length; ++x) {
-                    var fname = $(xmlp[x]).find('memberfname').text();
-                    var station =  $(xmlp[x]).find('memberstation').text();
-                    var cat = $(xmlp[x]).find('membercat').text();
-                    var callingtime = $(xmlp[x]).find('callingtime').text();
-                    var eta = $(xmlp[x]).find('eta').text();
+                    var fname = $(xmlp[x]).find('memberfname').text().trim();
+                    var station =  $(xmlp[x]).find('memberstation').text().trim();
+                    var cat = $(xmlp[x]).find('membercat').text().trim();
+                    var callingtime = $(xmlp[x]).find('callingtime').text().trim();
+                    var eta = $(xmlp[x]).find('eta').text().trim();
                     if (fname.trim().length < 1) {
                       continue;
                     }
+		    if (!per[fname]) {
+		       per[fname] = {};
+		       per[fname].name = fname;
+		    }
                     per[fname].arealocation = station;
                     per[fname].category = cat;
                     per[fname].calltime = callingtime;
                     per[fname].calleta = eta;
+		    per[fname].onduty_until = null;
+		    per[fname].group = null;
                   }                   
                   cb(per);
                 },
@@ -414,7 +420,7 @@
               this.lx = x;
               this.ly = y;
               var el = this.buf[x + y * this.w];
-              if (n < params.text.length) {
+              if (params.text && n < params.text.length) {
                 el.innerHTML = params.text[n];
               } else {
                 el.innerHTML = '&nbsp;';             
@@ -511,6 +517,9 @@
           var msgs_y_offset;
 
           function break_name_into_parts(name) {
+	    if (!name) {
+	      return [0, ''];
+	    }
             var a = name.indexOf('(');
             var b = name.indexOf(')');
             if (a < 0 || b < 0 || b < a || b == a) {
@@ -522,7 +531,7 @@
               return [null, name];
             }   
 
-            return [parseInt(num), name.substr(0, a) + name.substr(b + 1)];  
+            return [parseInt(num), (name.substr(0, a) + name.substr(b + 1)).trim()];  
           }
 
           console.log('breaking out fire department id on personnel');
@@ -542,6 +551,8 @@
             // 1 if a is greater
             // 0 if they are the same
             // -1 if b is lesser 
+	    if (ap.calltime && !bp.calltime) { return -1; }
+	    if (bp.calltime && !ap.calltime) { return 1; }
             if (ap.fdid < bp.fdid) { return -1; }
             if (ap.fdid > bp.fdid) { return 1; }
             return 0;
@@ -556,6 +567,9 @@
             console.log('person', person);
 
             msgs_y_offset = n + 1;
+
+	    /* TODO: bad form.. */
+	    person.group = person.group || '';
 
             var inactive = false;
             var isems;
