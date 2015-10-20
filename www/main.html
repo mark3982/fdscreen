@@ -255,17 +255,21 @@
 
                   line = line.trim();
 
+                  if (line.indexOf(':') > -1) {
+                    line = line.substr(line.indexOf(':') + 1);
+                  }
+
                   var tmp = line.toUpperCase();
 
                   /* first best guess at an address */
-                  if (!address0 && (tmp.indexOf('ECLECTIC') > -1 || tmp.indexOf('ELMORE') > -1)) {
+                  if (!address0 && (tmp.indexOf('ECLECTIC') > -1 || tmp.indexOf('TALLASSEE') > -1 || tmp.indexOf('ELMORE') > -1)) {
                     address0 = tmp;
                     continue;
                   }
 
                   /* second best guess at an address */
                   var do_unit_check = true;
-                  if (!address1 && (tmp.indexOf('RD') > -1 || tmp.indexOf('AVE') > -1 || tmp.indexOf('LN') > -1 || tmp.indexOf('HWY') > -1)) {
+                  if (!address1 && (tmp.indexOf('LOOP') > -1 || tmp.indexOf('RD') > -1 || tmp.indexOf('AVE') > -1 || tmp.indexOf('LN') > -1 || tmp.indexOf('HWY') > -1)) {
                     address1 = tmp;
                     do_unit_check = false;
                     //console.log('backup-address', tmp);
@@ -303,10 +307,6 @@
                     continue;
                   }
 
-                  if (line.indexOf(':') > -1) {
-                    line = line.substr(line.indexOf(':') + 1);
-                  }
-
                   if (line.trim().length < 1) {
                     desc_yank = null;
                     continue;
@@ -331,6 +331,10 @@
                 }
 
                 subject = desc.shift();
+
+                if (subject[0] == 'E' && !isNaN(parseInt(subject.substr(1)))) {
+                    subject = desc.shift();
+                }
 
                 var arrivedon = new Date(arrivedon_text);
 
