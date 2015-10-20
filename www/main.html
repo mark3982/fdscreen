@@ -709,8 +709,8 @@
             var msg = msgs[n];
 
             if (lst.subject == msg.subject && lst.address == msg.address) {
-              var a = lst.units.split(' ');
-              var b = msg.units.split(' ');
+              var a = (lst.units || '').split(' ');
+              var b = (msg.units || '').split(' ');
               var units = {};
               for (var x = 0; x < a.length; ++x) {
                 units[a[x]] = true;
