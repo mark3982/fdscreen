@@ -105,16 +105,16 @@
               var subject = $(ev).find('Subject').text();
               var start = $(ev).find('EventStart').text();
               var end = $(ev).find('EventEnd').text();
-     if (subject == undefined) {
+              if (subject == undefined) {
                 continue;
-     }
-     if (subject.trim() == '') {
+              }
+              if (subject.trim() == '') {
                 continue;
               }
               out.push({
                 subject:  subject,
-                start:   new Date(start),
-                end:    new Date(end),
+                start:    start,
+                end:      end,
               });               
             }
             cb(out);
@@ -401,7 +401,10 @@
               params.y = this.ly;
             }
 
-            params.w = params.w || params.text.length;
+            if (params.w == undefined) {
+                params.w = params.text.length;
+            }
+            //params.w = params.w || params.text.length;
 
             params.fg = params.fg || [230, 230, 230];
             params.bg = params.bg || [0, 0, 0, 0];
@@ -417,8 +420,8 @@
             var x;
             var y;
 
-	    if (params.text && params.text.length >= this.w) {
-	      params.text = params.text.substr(0, this.w - 2);
+	    if (params.text && params.text.length >= params.w) {
+	      params.text = params.text.substr(0, params.w);
 	    }
 
             for (var n = 0; n < params.w; ++n) {
@@ -431,7 +434,14 @@
               var el = this.buf[x + y * this.w];
 
               if (params.text && n < params.text.length) {
-                el.innerHTML = params.text[n];
+                if (n == 0) { 
+                    el.innerHTML = '<div style="width: 8px; display: inline-block;"></div>' + params.text[n];
+                } else {
+                    el.innerHTML = params.text[n];
+                }
+                if (n == params.text.length - 1) {
+                    el.innerHTML += '<div style="width: 8px; display: inline-block;"></div>';
+                }
               } else {
                 el.innerHTML = '&nbsp;';             
               }
@@ -647,29 +657,29 @@
             });            
  
             buf.write({
-              text:   person.name,
-              w:   25,
+              text: person.name,
+              w:    25,
               bg:   doshade(bgcolor, shade),
               fg:   fgcolor,
             });  
 
             buf.write({
-              text:   person.category,
-              w:   20,
+              text: person.category,
+              w:    20,
               bg:   bgcolor,
               fg:   fgcolor,
             });
 
             buf.write({
-              text:   person.arealocation,
+              text: person.arealocation,
               w:    15,
               bg:   doshade(bgcolor, shade),
               fg:   fgcolor,
             });
   
             buf.write({
-              text:   person.onduty_until,
-              w:   15,
+              text: person.onduty_until,
+              w:    15,
               bg:   bgcolor,
               fg:   fgcolor,
             });
@@ -678,12 +688,18 @@
           console.log('params', params);
 
           msgs_y_offset++;
-          for (var n = 0; n < reminders.length; n++, msgs_y_offset += 2) {
+          var nm;
+          if (reminders.length > 2) {
+            nm = 2;
+          } else {
+            nm = reminders.length;
+          }
+          for (var n = 0; n < nm; n++, msgs_y_offset += 2) {
             var remin = reminders[n];
             buf.write({
               x:     0,
               y:     msgs_y_offset,
-              text:     'Reminder [ ' + get_short_date(remin.start) + ' TO ' + get_short_date(remin.end) + ' ]',
+              text:     'Reminder [ ' + remin.start.replace('T', ' ') + ' TO ' + remin.end.replace('T', ' ') + ' ]',
               w:     80,
               bg:     [33, 33, 33, 255],
               fg:     [180, 180, 180],
