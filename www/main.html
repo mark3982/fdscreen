@@ -369,6 +369,7 @@
         var buf = [];
 
         $(con).empty();
+        con.style.width = '2000px';
         for (var n = 0; n < w * h; ++n) {
           //buf.push(' ');  
           if (n >= w && (n % w == 0)) {
@@ -789,8 +790,8 @@
 
             buf.write({
               bg:   col_colors_get(),
-              text:   msg.units,
-              w:   20,
+              text: msg.units,
+              w:   15,
             });
           }
           frame_status.set_message('DONE OK');
