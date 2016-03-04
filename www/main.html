@@ -148,6 +148,16 @@
           },
         });
       }
+      function get_storms(cb) {
+        $.ajax({
+          crossDomains: true,
+          url:          'http://kmcg3413.net/radar/getstorms.py',
+          method:       'GET',
+          success: function (data) {
+            cb(data);
+          }
+        })
+      }
       function get_personnel(cb) {
         $.support.cors = true;
         $.ajax({
@@ -421,9 +431,9 @@
             var x;
             var y;
 
-	    if (params.text && params.text.length >= params.w) {
-	      params.text = params.text.substr(0, params.w);
-	    }
+      	    if (params.text && params.text.length >= params.w) {
+      	      params.text = params.text.substr(0, params.w);
+      	    }
 
             for (var n = 0; n < params.w; ++n) {
               x = params.x + n;
@@ -434,9 +444,13 @@
               this.ly = y;
               var el = this.buf[x + y * this.w];
 
+              if (!el) {
+                break;
+              }
+
               if (params.text && n < params.text.length) {
                 if (n == 0) { 
-                    el.innerHTML = '<div style="width: 8px; display: inline-block;"></div>' + params.text[n];
+                  el.innerHTML = '<div style="width: 8px; display: inline-block;"></div>' + params.text[n];
                 } else {
                     el.innerHTML = params.text[n];
                 }
@@ -526,6 +540,7 @@
         frame_status.inc_fetch_count();
         frame_status.set_message('Fetching data from IAR server..');
 
+        get_storms(function (storms) {
         get_messages(function (msgs) { 
         get_personnel(function (persons) {
         get_reminders(function (reminders) {
@@ -718,6 +733,7 @@
           ++msgs_y_offset;
 
           $(frame_alerts).empty();
+          $(frame_alerts).append('<pre>' + storms + '</pre>');
           for (var n = 0; n < params.OnScreenContent.length; n++) {
             var v = params.OnScreenContent[n];
             $(frame_alerts).append(v + '<br/>');
@@ -795,7 +811,7 @@
             });
           }
           frame_status.set_message('DONE OK');
-        })})})});
+        })})})})});
       }
     </script>
   </body>
