@@ -72,6 +72,7 @@
       <div id="con" style="font-family: monospace; font-size: 15pt;">
       </div>
     </div>
+    <img id="firereport_image" src="http://kmcg3413.net/firereport.py"/>
     <div id="frame_alerts" style="font-family: monospace; font-size: 12pt;">
     </div>
     <script type="text/javascript" src="cordova.js"></script>
@@ -701,7 +702,7 @@
             });
           }
 
-          console.log('params', params);
+          firereport_image.src = "http://kmc3413.net/firereport.py?" + new Date().getTime();
 
           msgs_y_offset++;
           var nm;
