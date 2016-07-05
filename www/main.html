@@ -488,6 +488,10 @@
       //console.log('@@@', frame_status.xrender);
 
       setInterval(function () {
+        document.getElementById('firereport_image').src = "http://kmcg3413.net/firereport.py?" + new Date().getTime();
+      }, 15000);
+
+      setInterval(function () {
         var delta = frame_status.seconds_since_update();
         if (delta > 30) {
           $(frame_warning).show();
@@ -701,8 +705,6 @@
               fg:   fgcolor,
             });
           }
-
-          document.getElementById('firereport_image').src = "http://kmcg3413.net/firereport.py?" + new Date().getTime();
 
           msgs_y_offset++;
           var nm;
