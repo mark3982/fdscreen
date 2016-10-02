@@ -8,7 +8,31 @@
     <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
     <title>EFD Screen</title>
+    <style>
+    table {
+      border: 1px gray solid;
+      border-collapse: collapse;
+    }
+    tr:nth-child(even) {
+      background: #444444;
+    }
+    tr:nth-child(odd) {
+    }
+    td {
+      margin: 0px;
+      padding: 0px;
+      border: 1px gray solid;
+      font-size: 12pt;
+    }
+
+    .RandomTaskNotifyFrame {
+      font-size: 34pt;
+      font-family: "New Time Roman";
+      text-align: center;
+    }
+    </style>
   </head>
+
   <script type="text/javascript">
     function on_body_load() {
       document.addEventListener('deviceready', function () {
@@ -25,7 +49,7 @@
 
    var start_time = (new Date()).getTime();
 
-   function app_init() {
+  function app_init() {
     window.addEventListener('message', function (e) {
       switch (e.data) {
         case 'start':
@@ -35,23 +59,22 @@
             window.postMessage('tick', '*');
           }, 5000);
           break;
-          case 'tick':
-            if ((new Date()).getTime() - start_time > 3600 * 1000) {
-              window.location.reload(true);
-            }
-            con_render(con);
-            break;
+        case 'tick':
+          if ((new Date()).getTime() - start_time > 3600 * 1000) {
+            window.location.reload(true);
+          }
+          con_render(con);
+          break;
       }
     }, false);
+
     window.postMessage('start', '*');
-   }
-
-      app_init();
-
-      //alert('thinking about loading');
-      //con_render(con);
     }
+
+    app_init();
+  }
   </script>
+
   <body onload="on_body_load()">
     <style>
       body {
@@ -59,25 +82,32 @@
         color:      #dddddd;
       }
     </style>
+    
     <div style="padding: 20px;">
-    <span style="font-family: monospace; font-size: 6pt; padding: 5px; ">
-      Created by McGuire (kmcg3413@gmail.com)
-    </span>
-    <span id="frame_status" style="font-family: monospace; font-size: 10pt; padding: 20px;">
-    </span>
+      <span style="font-family: monospace; font-size: 6pt; padding: 5px; ">
+        Created by McGuire (kmcg3413@gmail.com)
+      </span>
+      <span id="frame_status" style="font-family: monospace; font-size: 10pt; padding: 20px;">
+      </span>
     </div>
-    <div id="frame_warning" style="display: none; font-size: 24pt; padding: 0px 0px 0px 20px; font-family: monospace; border: 10px dashed #ff0000; background-color: #ee3333; margin: 15px; color: #000000;"></div>
+
+    <div id="frame_warning" style="display: none; font-size: 24pt; padding: 0px 0px 0px 20px; font-family: monospace; border: 10px dashed #ff0000; background-color: #ee3333; margin: 15px; color: #000000;">
+    </div>
+    
     <div class="app">
-      <div id="gmap" style="position: absolute;"></div>
       <div id="con" style="font-family: monospace; font-size: 15pt;">
       </div>
+      <div id="task" class="RandomTaskNotifyFrame">
+      </div>
     </div>
-    <img id="firereport_image" src="http://kmcg3413.net/firereport.py"/>
+    
     <div id="frame_alerts" style="font-family: monospace; font-size: 12pt;">
     </div>
-    <script type="text/javascript" src="cordova.js"></script>
+    
+    <zscript type="text/javascript" src="cordova.js"></script>
     <script type="text/javascript" src="./js/jquery.js"></script>
- <script type="text/javascript" src="js/Insomnia.js"></script>
+    <zscript type="text/javascript" src="js/Insomnia.js"></script>
+
     <script type="text/javascript">
       function initMap() {
         var map = new google.maps.Map(gmap, {
@@ -95,9 +125,9 @@
         $.support.cors = true;
         $.ajax({
           crossDomains:   true,
-          url:      'http://iamresponding.com/v3/AgencyServices.asmx/GetRemindersByMember',
-          data:       'subsString=536871457&days=30',
-          method:     'POST',
+          url:            'http://iamresponding.com/v3/AgencyServices.asmx/GetRemindersByMember',
+          data:           'subsString=536871457&days=30',
+          method:         'POST',
           success: function (data) {
             var xml = $(data).find('Event');
             var out = [];
@@ -122,15 +152,17 @@
           },
         });
       }
+
       function get_short_date(d) {
         s = new String(d).split(' ');
         return s[4] + ' ' + s[1] + ' ' + s[2];
-   }
+      }
+
       function get_params(cb) {
         $.support.cors = true;
         $.ajax({
-          crossDomains:     true,
-          url:        'http://iamresponding.com/v3/AgencyServices.asmx/GetParametersSessionLess',
+          crossDomains: true,
+          url:          'http://iamresponding.com/v3/AgencyServices.asmx/GetParametersSessionLess',
           data:         'org=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&masterAdmin=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&agencyLogined=XsDISNWuJRFmH8Dpp0mh7g%3d%3d&member=pRGbni1xiTyo7tooAXMgcw%3d%3d',
           method:       'POST',
           success:      function (data) {
@@ -149,16 +181,7 @@
           },
         });
       }
-      function get_storms(cb) {
-        $.ajax({
-          crossDomains: true,
-          url:          'http://kmcg3413.net/radar/getstorms.py',
-          method:       'GET',
-          success: function (data) {
-            cb(data);
-          }
-        })
-      }
+
       function get_personnel(cb) {
         $.support.cors = true;
         $.ajax({
@@ -177,7 +200,7 @@
                 var arealocation = $(xmlp).find('memberstation').text().trim();
                 var onduty_until = $(xmlp).find('untilat').text().trim(); 
                 if (membername.trim().length == 0) {
-		  continue;
+		              continue;
                 }
                 per[membername] = {
                   name:      membername,
@@ -189,10 +212,10 @@
               }
 
               $.ajax({
-                crossDomains:   true,
-                url:       'http://iamresponding.com/v3/AgencyServices.asmx/GetNowRespondingWithSort',
-                data:       'org=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&member=pRGbni1xiTyo7tooAXMgcw%3d%3d&sort=callingtime desc,callingtime desc&flag=&userType=',
-                method:      'POST',
+                crossDomains: true,
+                url:          'http://iamresponding.com/v3/AgencyServices.asmx/GetNowRespondingWithSort',
+                data:         'org=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&member=pRGbni1xiTyo7tooAXMgcw%3d%3d&sort=callingtime desc,callingtime desc&flag=&userType=',
+                method:       'POST',
                 success:     function (data) {
                   var xmlp = $(data).find('NowResponding');
                   for (var x = 0; x < xmlp.length; ++x) {
@@ -204,17 +227,18 @@
                     if (fname.trim().length < 1) {
                       continue;
                     }
-		    if (!per[fname]) {
-		       per[fname] = {};
-		       per[fname].name = fname;
-		    }
+            		    if (!per[fname]) {
+            		       per[fname] = {};
+            		       per[fname].name = fname;
+            		    }
                     per[fname].arealocation = station;
                     per[fname].category = cat;
                     per[fname].calltime = callingtime;
                     per[fname].calleta = eta;
-		    per[fname].onduty_until = null;
-		    per[fname].group = null;
-                  }                   
+		                per[fname].onduty_until = null;
+		                per[fname].group = null;
+                  }
+
                   cb(per);
                 },
               });
@@ -227,9 +251,9 @@
         $.support.cors = true;
         $.ajax({
             crossDomain: true,
-            url:   'http://iamresponding.com/v3/DispatchMessages.asmx/ListWithParser',
-            data:   'subscriber=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&member=pRGbni1xiTyo7tooAXMgcw%3d%3d&admin=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&agency=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&_=1434747632060',
-            method:  'POST',
+            url:         'http://iamresponding.com/v3/DispatchMessages.asmx/ListWithParser',
+            data:        'subscriber=cQRVoXMVNat%40CnNoXldJ2A%3d%3d&member=pRGbni1xiTyo7tooAXMgcw%3d%3d&admin=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&agency=t8Q4JUy6ZXrZHb4n6ZJ6eg%3d%3d&_=1434747632060',
+            method:      'POST',
             beforeSend:  function (req) {
               //'ASP.NET_SessionId=bzse3z3v25j230swmzjwnhho; __utma=173121979.396418310.1434738994.1434738994.1434738994.1; __utmc=173121979; __utmz=173121979.1434738994.1.1.utmccn=(direct)|utmcsr=(direct)|utmcmd=(none); IarSession=Token=bbf36f71-e520-4356-ae5a-aca96f1ebd9e',
               //req.setRequestHeader('Cookie', 'hehehe');
@@ -283,7 +307,6 @@
                   if (!address1 && (tmp.indexOf('LOOP') > -1 || tmp.indexOf('RD') > -1 || tmp.indexOf('AVE') > -1 || tmp.indexOf('LN') > -1 || tmp.indexOf('HWY') > -1)) {
                     address1 = tmp;
                     do_unit_check = false;
-                    //console.log('backup-address', tmp);
                     desc_yank = desc.length;
                   }
 
@@ -296,7 +319,6 @@
                       var part = parts[x];
 
                       if (part.length != 3 && part.length != 4) {
-                        //console.log('part is length', part.length);
                         pass = false;
                         break;
                       }
@@ -310,7 +332,6 @@
                   }
 
                   if (line.indexOf('Call Received Time:') == 0) {
-                    // Call Received Time: 9/28/2015 12:50:28 PM Dispatch: 9/28/2015 1:08:27 PM Enroute: 13:08:38 OnScene: 13:17:24 Depart: 13:41:39 Comp: 13:49:04
                     for (var x = 0; x < line.length; ++x) {
 
                     }
@@ -322,8 +343,6 @@
                     desc_yank = null;
                     continue;
                   }
-
-                  //console.log('looking', line);
 
                   line = line.trim();
 
@@ -363,8 +382,6 @@
                   return s[4] + ' ' + s[1] + ' ' + s[2];
                 };
 
-                //console.log(msg);
-
                 out.push(msg);
               }
 
@@ -373,110 +390,17 @@
               cb(out);
             }
         });
-        //alert('asycn handoff complete');
       }
 
-      function con_buffer_init(con, w, h) {
-        var buf = [];
-
-        $(con).empty();
-        con.style.width = '2000px';
-        for (var n = 0; n < w * h; ++n) {
-          //buf.push(' ');  
-          if (n >= w && (n % w == 0)) {
-            $(con).append('<br/>');
-          }
-          var el = document.createElement('span');
-          el.innerHTML = 'X';
-          el.style.color = 'rgb(255, 0, 0)';
-          el.style['background-color'] = 'rgba(0, 0, 0, 0)';
-          $(con).append(el);
-          buf.push(el);
-        }
-        return {
-          buf:  buf,
-          w:   w,
-          h:   h,
-          lx:   -1,
-          ly:   0,
-          clear: function() {
-            for (var i = 0; i < this.w * this.h; ++i) {
-              this.buf[i].innerHTML = '&nbsp;';
-              this.buf[i].style['background-color'] = 'rgba(0, 0, 0, 0)';
-            }
-          },
-          write: function(params) {
-            if (params.x == undefined) {
-              params.x = this.lx + 1;
-            }
-            if (params.y == undefined) {
-              params.y = this.ly;
-            }
-
-            if (params.w == undefined) {
-                params.w = params.text.length;
-            }
-            //params.w = params.w || params.text.length;
-
-            params.fg = params.fg || [230, 230, 230];
-            params.bg = params.bg || [0, 0, 0, 0];
-
-            var fr = params.fg[0];
-            var fg = params.fg[1];
-            var fb = params.fg[2];
-            var br = params.bg[0];
-            var bg = params.bg[1];
-            var bb = params.bg[2];
-            var ba = params.bg[3];
-
-            var x;
-            var y;
-
-      	    if (params.text && params.text.length >= params.w) {
-      	      params.text = params.text.substr(0, params.w);
-      	    }
-
-            for (var n = 0; n < params.w; ++n) {
-              x = params.x + n;
-              y = Math.floor(x / this.w);
-              x = x - (y * this.w);
-              y += params.y;
-              this.lx = x;
-              this.ly = y;
-              var el = this.buf[x + y * this.w];
-
-              if (!el) {
-                break;
-              }
-
-              if (params.text && n < params.text.length) {
-                if (n == 0) { 
-                  el.innerHTML = '<div style="width: 8px; display: inline-block;"></div>' + params.text[n];
-                } else {
-                    el.innerHTML = params.text[n];
-                }
-                if (n == params.text.length - 1) {
-                    el.innerHTML += '<div style="width: 8px; display: inline-block;"></div>';
-                }
-              } else {
-                el.innerHTML = '&nbsp;';             
-              }
-              el.style.color = 'rgb(' + fr + ',' + fg + ',' + fb + ')';
-              el.style['background-color'] = 'rgba(' + br + ',' + bg + ',' + bb + ',' + ba + ')';
-            }
-            //this.buf[x + y * this.w].innerHTML += '&nbsp;';
-          },
-        };
-      }
+      /*
+      */
 
       frame_status.xrender = function () {
         var delta = this.seconds_since_update();
         $(this).empty();
         this.innerHTML = 
           'Updates: ' + this.update_count + ' ' +
-          'Fetches: ' + this.fetch_count + ' ' +
-          'Status: ' + this.msg + ' ' +
-          'Last updated ' + delta + ' seconds ago...'
+          'Fetches: ' + this.fetch_count + ' '
         ;
       };
 
@@ -486,10 +410,6 @@
       frame_status.last_update = new Date();
 
       //console.log('@@@', frame_status.xrender);
-
-      setInterval(function () {
-        document.getElementById('firereport_image').src = "http://kmcg3413.net/firereport.py?" + new Date().getTime();
-      }, 120000);
 
       setInterval(function () {
         var delta = frame_status.seconds_since_update();
@@ -526,47 +446,123 @@
         frame_status.set_message(msg);
       }
 
+      var g_is_responding = false;
+      var g_recent_event_time = null;
+      var g_last_task_display = 0;
+      var g_task_display_state = 0;
 
-      var col_colors = [[99, 99, 99, 255], [77, 77, 77, 255]];
-      var col_colors_ndx = 0;
-      var col_colors_get = function () {
-      var tmp = col_colors_ndx;
-        col_colors_ndx = (col_colors_ndx + 1) % col_colors.length;
-        return col_colors[tmp];
-      };
+      var g_last_task_change = 0;
 
-      var col_colors_rst = function () {
-        col_colors_ndx = 0;
-      };
+      setInterval(function () {
+        var con = document.getElementById('con');
+        var task = document.getElementById('task');
 
-      var buf = con_buffer_init(con, 100, 20);
+        if (g_is_responding) {
+          /*
+            If anyone is responding then do not display it.
+          */
+          $(con).show();
+          $(task).hide();
+          return;
+        }
+
+        var now = new Date();
+        
+        if (g_recent_event_time != null) {
+          /*
+            Get the difference in milliseconds from now since
+            the last known, most recent, incident/event.
+          */
+          var delta = Math.abs(now - g_recent_event_time);
+
+          if (delta / 1000.0 < 60.0 * 10.0) {
+            /*
+              Do not display task reminder screen if an incident/event
+              has happened in the last ten minutes.
+            */
+            $(con).show();
+            $(task).hide();            
+            return;
+          }
+        }
+
+        var task_change_seconds = 60.0 * 60.0 * 4.0;
+        var task_pane_off_seconds = 60.0 * 5.0;
+        var task_pane_on_seconds = 30.0;
+
+        var delta = (now.getTime() - g_last_task_display) / 1000.0;
+
+        if ((now.getTime() - g_last_task_change) / 1000.0 > task_change_seconds) {
+          g_last_task_change = now.getTime();
+
+          var msgs = [
+            'Are clothes mildewing in the washer?',
+            'Is the kitchen floor dirty?',
+            'Is the bathroom clean?',
+            'Is the ambulance checkoff done?',
+            'Is the shower dirty?',
+            'Are clothes not folded on dryer?',
+            'Is trash smelling bad?',
+            'Are power consuming items such as lights, heating, and air adjusted when not needed?',
+            'Are doors closed to reduce heating and cooling costs?',
+          ];
+
+          var one_msg = msgs[Math.floor(Math.random() * msgs.length)];
+
+          $(task).empty();
+          $(task).append('<div style="width: 1in; height: 2in;"> </div>')
+          $(task).append(one_msg);
+        }
+
+        if (g_task_display_state == 0 && delta > task_pane_off_seconds) {
+          /* Display task screen. */
+          $(con).hide();
+          $(task).show();
+
+          g_last_task_display = now.getTime();
+          g_task_display_state = 1;
+          return;
+        }
+
+        if (g_task_display_state == 1 && delta > task_pane_on_seconds) {
+          /* Display normal screen. */
+          $(con).show();
+          $(task).hide();
+
+          g_last_task_display = now.getTime();
+          g_task_display_state = 0;
+          return;
+        }
+
+        /*
+        */
+      }, 3000);
       
       function con_render(con) {
         frame_status.inc_fetch_count();
         frame_status.set_message('Fetching data from IAR server..');
 
-        get_storms(function (storms) {
         get_messages(function (msgs) { 
         get_personnel(function (persons) {
         get_reminders(function (reminders) {
         get_params(function (params) {
           frame_status.inc_update_count();
           frame_status.set_message('Rendering data from IAR server..');
-              
-          buf.clear();
-            
-          var msgs_y_offset;
 
           function break_name_into_parts(name) {
-	    if (!name) {
-	      return [0, ''];
-	    }
+      	    if (!name) {
+      	      return [0, ''];
+      	    }
+
             var a = name.indexOf('(');
             var b = name.indexOf(')');
+            
             if (a < 0 || b < 0 || b < a || b == a) {
               return [null, name];
             }
+            
             var num = name.substr(a + 1, b - 1);
+            
             if (isNaN(num)) {
               console.log('@', num);
               return [null, name];
@@ -592,154 +588,98 @@
             // 1 if a is greater
             // 0 if they are the same
             // -1 if b is lesser 
-	    if (ap.calltime && !bp.calltime) { return -1; }
-	    if (bp.calltime && !ap.calltime) { return 1; }
+            if (ap.calltime && !bp.calltime) { return -1; }
+            if (bp.calltime && !ap.calltime) { return 1; }
             if (ap.fdid < bp.fdid) { return -1; }
             if (ap.fdid > bp.fdid) { return 1; }
             return 0;
           });
 
-          console.log('personnel loop');
+          var ptable = document.createElement('table');
 
-          msgs_y_offset = 0;
+          g_is_responding = false;
 
           for (var n = 0; n < persons.length; ++n) {
             var person = persons[n];
-            console.log('person', person);
 
-            msgs_y_offset = n + 1;
-
-	    /* TODO: bad form.. */
-	    person.group = person.group || '';
+            person.group = person.group || '';
 
             var inactive = false;
             var isems;
+            var style;
 
-            var fgcolor = [0xdd, 0xdd, 0xdd];
-            var bgcolor = [99, 99, 99, 255];
+            var style_fg = 'color: rgb(0xdd, 0xdd, 0xdd);';
+            var style_bg = 'background-color: rgb(0x99, 0x99, 0x99);';
 
             if (person.arealocation.toLowerCase().indexOf('o.o.t') > -1) {
               state = 'INACTIVE';
-              state_fg = [0xbb, 0xbb, 0xbb];
-              state_bg = [0, 0, 0, 255];
+              style_fg = 'color: rgb(0xbb, 0xbb, 0xbb)';
+              style_bg = 'background-color: rgb(0, 0, 0);'
               inactive = true;
             }
 
             if (person.group.toLowerCase().indexOf('unavail') > -1) {
-              fgcolor = [0x44, 0x44, 0x44];
+              style_fg = 'color: rgb(0x44, 0x44, 0x44);';
               inactive = true;
             }
         
             if (person.group.toLowerCase().indexOf('ems') > -1) {
-              bgcolor = [0x40, 0x40, 0xa0, 255];
+              style_bg = 'background-color: rgb(0xa0, 0x40, 0x40);';
               isems = true;
             } else {
-              bgcolor = [0xa0, 0x40, 0x40, 255];
+              style_bg = 'background-color: rgb(0xa0, 0x40, 0x40);';
               isems = false;
             }
             
             if (person.calltime && person.calltime.length) {
               state = 'RESPONDING';
-              state_fg = [0, 0, 0];
-              state_bg = [0, 0x99, 0, 255];
+              style_fg = 'color: #000000;';
+              style_bg = 'background-color: #009900;';
+              g_is_responding = true;
             } else {
               if (!inactive) {
                 state = 'ON DUTY';
-                state_fg = [190, 190, 190];
-                state_bg = [40, 40, 40, 255];
+                style_fg = 'color: rgb(190, 190, 190);'
+                style_bg = 'background-color: rgb(40, 40, 40);';
               }
             }
 
-            var shade = 0.9;
+            var row = document.createElement('tr');
 
-            function doshade(rgba, co) {
-              return [
-                Math.floor(rgba[0] * co),
-                Math.floor(rgba[1] * co),
-                Math.floor(rgba[2] * co),
-                Math.floor(rgba[3]),
-              ];
-            }
+            row.style = style_fg + ' ' + style_bg;
 
-            buf.write({
-              x:   0,
-              y:   n,
-              text:   state,
-              w:   15,
-              bg:   state_bg,
-              fg:   state_fg,
-            });
+            row.innerHTML = 
+              '<td>' + state + '</td>' +
+              '<td>' + new String(person.fdid) + '</td>' +
+              '<td>' + person.name + '</td>' +
+              '<td>' + person.category + '</td>' +
+              '<td>' + person.arealocation + '</td>' +
+              '<td>' + person.onduty_until + '</td>';
 
-            buf.write({
-              text:   new String(person.fdid || ' '),
-              w:   5,
-              bg:   bgcolor,
-              fg:   fgcolor,
-            });            
- 
-            buf.write({
-              text: person.name,
-              w:    25,
-              bg:   doshade(bgcolor, shade),
-              fg:   fgcolor,
-            });  
-
-            buf.write({
-              text: person.category,
-              w:    20,
-              bg:   bgcolor,
-              fg:   fgcolor,
-            });
-
-            buf.write({
-              text: person.arealocation,
-              w:    15,
-              bg:   doshade(bgcolor, shade),
-              fg:   fgcolor,
-            });
-  
-            buf.write({
-              text: person.onduty_until,
-              w:    15,
-              bg:   bgcolor,
-              fg:   fgcolor,
-            });
+            $(ptable).append(row);
           }
 
-          msgs_y_offset++;
+          var rtable = document.createElement('table');
+
           var nm;
           if (reminders.length > 2) {
             nm = 2;
           } else {
             nm = reminders.length;
           }
-          for (var n = 0; n < nm; n++, msgs_y_offset += 2) {
+
+          for (var n = 0; n < nm; n++) {
             var remin = reminders[n];
-            buf.write({
-              x:     0,
-              y:     msgs_y_offset,
-              text:     'Reminder [ ' + remin.start.replace('T', ' ') + ' TO ' + remin.end.replace('T', ' ') + ' ]',
-              w:     80,
-              bg:     [33, 33, 33, 255],
-              fg:     [180, 180, 180],
-            });    
-            buf.write({
-              x:     0,
-              y:     msgs_y_offset + 1,
-              text:     '  ' + remin.subject,
-              w:     80,
-              bg:     [33, 33, 33, 255],
-              fg:     [190, 190, 190],
-            });
-          }
 
-          ++msgs_y_offset;
+            var row = document.createElement('tr');
 
-          $(frame_alerts).empty();
-          $(frame_alerts).append('<pre>' + storms + '</pre>');
-          for (var n = 0; n < params.OnScreenContent.length; n++) {
-            var v = params.OnScreenContent[n];
-            $(frame_alerts).append(v + '<br/>');
+            row.innerHTML =
+              '<td>Reminder</td>' +
+              '<td>' + remin.subject + '</td>' +
+              '<td>' + remin.start.replace('T', ' ') + '</td>' +
+              '<td>' + remin.end.replace('T', ' ') + '</td>';
+
+            $(rtable).append(row);
           }
 
           var tmp = [msgs[0]];
@@ -751,70 +691,78 @@
             if (lst.subject == msg.subject && lst.address == msg.address) {
               var a = (lst.units || '').split(' ');
               var b = (msg.units || '').split(' ');
+              
               var units = {};
+              
               for (var x = 0; x < a.length; ++x) {
                 units[a[x]] = true;
               }
+              
               for (var x = 0; x < b.length; ++x) {
                 units[b[x]] = true;
               }
+
               var _units = [];
+              
               for (var k in units) {
                 _units.push(k);
               }
+              
               lst.units = _units.join(' ');
               continue;
             }
+
             tmp.push(msg);
           }
 
           msgs = tmp;
 
+          g_recent_event_time = null;
+
+          var itable = document.createElement('table');
+
           frame_status.set_message('Writing incident messages..');
           for (var n = 0; n < msgs.length; ++n) {
-            //console.log('@', msgs[x]);
-            //for (var k in msgs[x]) {
-            //  $(con).append(k + ':' + msgs[x].subject);
-            //}
-
             var msg = msgs[n];
 
-            col_colors_rst();             
+            var row = document.createElement('tr');
 
-            buf.write({
-              x:   0,
-              y:   n + msgs_y_offset,
-              bg:    col_colors_get(),
-              text:   new String(msgs[n].get_short_date()),
-              w:   15,
-            });
+            var address = msg.address;
 
-            buf.write({
-              bg:   col_colors_get(),
-              text:   msg.subject,
-              w:   10,
-            });
+            if (g_recent_event_time == null || msg.arrived_on < g_recent_event_time) {
+              g_recent_event_time = msg.arrived_on;
+            }
 
-            buf.write({
-              bg:   col_colors_get(),
-              text:   msg.address,
-              w:   30,
-            });
+            if (address.indexOf(' ELMORE') > -1) {
+              address = address.substr(0, address.indexOf(' ELMORE'));
+            }
 
-            buf.write({
-              bg:   col_colors_get(),
-              text:   msg.desc.join(' '),
-              w:   25,
-            });
+            if (address.indexOf(' ECLECTIC') > -1) {
+              address = address.substr(0, address.indexOf(' ECLECTIC'));
+            }
 
-            buf.write({
-              bg:   col_colors_get(),
-              text: msg.units,
-              w:   15,
-            });
+            row.innerHTML =
+              '<td>' + msg.get_short_date() + '</td>' +
+              '<td>' + msg.subject + '</td>' +
+              '<td>' + address + '</td>' +
+              '<td>' + msg.desc.join(' ') + '</td>' +
+              '<td>' + msg.units + '</td>';
+
+            $(itable).append(row);
           }
-          frame_status.set_message('DONE OK');
-        })})})})});
+          
+          /*
+          */
+          var con = document.getElementById('con');
+
+          $(con).empty();
+
+          $(con).append(ptable);
+          $(con).append(rtable);
+          $(con).append(itable);
+          /*
+          */
+        })})})});
       }
     </script>
   </body>
