@@ -627,33 +627,32 @@
             var isems;
             var style;
 
-            var style_fg = 'color: #dddddd;';
+            var style_fg = '#dddddd';
             var style_bg = '';
 
             if (person.arealocation.toLowerCase().indexOf('o.o.t') > -1) {
               state = 'INACTIVE';
-              style_fg = 'color: #bbbbbb';
-              style_bg = 'background-color: rgb(0, 0, 0);'
+              style_fg = '#bbbbbb';
               inactive = true;
             }
 
             if (person.group.toLowerCase().indexOf('unavail') > -1) {
-              style_fg = 'color: #444444;';
+              style_fg = '#444444';
               inactive = true;
             }
         
             if (person.group.toLowerCase().indexOf('ems') > -1) {
-              style_bg = 'background-color: #4040a0;';
+              style_bg = '#4040a0';
               isems = true;
             } else {
-              style_bg = 'background-color: #a04040;';
+              style_bg = '#a04040';
               isems = false;
             }
             
             if (person.calltime && person.calltime.length) {
               state = 'RESPONDING';
-              style_fg = 'color: #000000;';
-              style_bg = 'background-color: #009900;';
+              style_fg = '#000000';
+              style_bg = '#009900';
               g_is_responding = true;
             } else {
               if (!inactive) {
@@ -665,7 +664,17 @@
 
             var row = document.createElement('tr');
 
-            row.style = style_fg + ' ' + style_bg;
+            /*
+              For some reason the Android WebKit version used
+              in production does not handle assignment of the
+              style string to the row element. Instead each
+              member of the style structure must be updated
+              manually.
+            */
+            //row.style = style_fg + ' ' + style_bg;
+
+            row.style.color = style_fg;
+            row.style.background = style_bg;
 
             row.innerHTML = 
               '<td>' + state + '</td>' +
