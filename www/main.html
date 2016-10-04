@@ -627,30 +627,28 @@
             var isems;
             var style;
 
-            var style_fg = 'color: rgb(221, 221, 221);';
-            var style_bg = 'background-color: rgb(153, 153, 153);';
+            var style_fg = 'color: #dddddd;';
+            var style_bg = '';
 
             if (person.arealocation.toLowerCase().indexOf('o.o.t') > -1) {
               state = 'INACTIVE';
-              style_fg = 'color: rgb(187, 187, 187)';
+              style_fg = 'color: #bbbbbb';
               style_bg = 'background-color: rgb(0, 0, 0);'
               inactive = true;
             }
 
             if (person.group.toLowerCase().indexOf('unavail') > -1) {
-              style_fg = 'color: rgb(68, 68, 68);';
+              style_fg = 'color: #444444;';
               inactive = true;
             }
         
             if (person.group.toLowerCase().indexOf('ems') > -1) {
-              style_bg = 'background-color: rgb(160, 64, 64);';
+              style_bg = 'background-color: #4040a0;';
               isems = true;
             } else {
-              style_bg = 'background-color: rgb(160, 64, 64);';
+              style_bg = 'background-color: #a04040;';
               isems = false;
             }
-
-            person.calltime = 'e';
             
             if (person.calltime && person.calltime.length) {
               state = 'RESPONDING';
@@ -660,8 +658,8 @@
             } else {
               if (!inactive) {
                 state = 'ON DUTY';
-                style_fg = 'color: rgb(190, 190, 190);'
-                style_bg = 'background-color: rgb(40, 40, 40);';
+                //style_fg = 'color: #bebebe;'
+                //style_bg = 'background-color: #282828;';
               }
             }
 
