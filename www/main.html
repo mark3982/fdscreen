@@ -14,14 +14,14 @@
       border-collapse: collapse;
     }
     tr:nth-child(even) {
-      background: #444444;
+      background: #252525;
     }
     tr:nth-child(odd) {
     }
     td {
       margin: 0px;
       padding: 0px;
-      border: 1px gray solid;
+      border: 1px #111111 solid;
       font-size: 12pt;
     }
 
@@ -29,6 +29,18 @@
       font-size: 34pt;
       font-family: "New Time Roman";
       text-align: center;
+    }
+    .PersonnelTable {
+      font-size: 24pt;
+      font-family: monospace;
+      border: 1px #111111 solid;
+      padding: 3px;
+      margin-bottom: 5px;
+    }
+    .PersonnelTable td {
+      padding: 3px;
+      margin: 0px;
+      font-size: 18pt;
     }
     </style>
   </head>
@@ -449,7 +461,7 @@
       var g_is_responding = false;
       var g_recent_event_time = null;
       var g_last_task_display = 0;
-      var g_task_display_state = 0;
+      var g_task_display_state = 1;
 
       var g_last_task_change = 0;
 
@@ -501,6 +513,7 @@
             'Is the bathroom clean?',
             'Is the ambulance checkoff done?',
             'Is the shower dirty?',
+            'Are you being kind?',
             'Are clothes not folded on dryer?',
             'Is trash smelling bad?',
             'Are power consuming items such as lights, heating, and air adjusted when not needed?',
@@ -576,7 +589,11 @@
           tmp = [];
           for (var k in persons) {
             var r = break_name_into_parts(persons[k].name);
-            persons[k].fdid = r[0];
+            if (r[0]) {
+              persons[k].fdid = r[0];
+            } else {
+              persons[k].fdid = '???';
+            }
             persons[k].name = r[1];
             tmp.push(persons[k]);
           }
@@ -597,6 +614,8 @@
 
           var ptable = document.createElement('table');
 
+          ptable.className = 'PersonnelTable';
+
           g_is_responding = false;
 
           for (var n = 0; n < persons.length; ++n) {
@@ -608,28 +627,30 @@
             var isems;
             var style;
 
-            var style_fg = 'color: rgb(0xdd, 0xdd, 0xdd);';
-            var style_bg = 'background-color: rgb(0x99, 0x99, 0x99);';
+            var style_fg = 'color: rgb(221, 221, 221);';
+            var style_bg = 'background-color: rgb(153, 153, 153);';
 
             if (person.arealocation.toLowerCase().indexOf('o.o.t') > -1) {
               state = 'INACTIVE';
-              style_fg = 'color: rgb(0xbb, 0xbb, 0xbb)';
+              style_fg = 'color: rgb(187, 187, 187)';
               style_bg = 'background-color: rgb(0, 0, 0);'
               inactive = true;
             }
 
             if (person.group.toLowerCase().indexOf('unavail') > -1) {
-              style_fg = 'color: rgb(0x44, 0x44, 0x44);';
+              style_fg = 'color: rgb(68, 68, 68);';
               inactive = true;
             }
         
             if (person.group.toLowerCase().indexOf('ems') > -1) {
-              style_bg = 'background-color: rgb(0xa0, 0x40, 0x40);';
+              style_bg = 'background-color: rgb(160, 64, 64);';
               isems = true;
             } else {
-              style_bg = 'background-color: rgb(0xa0, 0x40, 0x40);';
+              style_bg = 'background-color: rgb(160, 64, 64);';
               isems = false;
             }
+
+            person.calltime = 'e';
             
             if (person.calltime && person.calltime.length) {
               state = 'RESPONDING';
